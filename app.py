@@ -1,5 +1,5 @@
-from flask import Flask, render_template, request
 import requests
+from flask import Flask, make_response, render_template, request
 
 app = Flask(__name__)
 
@@ -26,8 +26,10 @@ def signup():
         response = requests.post(url, json=data, headers=headers)
         response_data = response.json()
 
-        if response_data.get("success") == "true":
-            return render_template("home.html")
+        if response_data.get("success") == True:
+            resp = make_response(render_template("home.html"))
+            resp.set_cookie("token", response_data.get("token", ""))
+            return resp
         else:
             message = response_data.get("message")
             return render_template("signup.html", message=message)
@@ -51,8 +53,10 @@ def signin():
         response = requests.post(url, json=data, headers=headers)
         response_data = response.json()
 
-        if response_data.get("success") == "true":
-            return render_template("home.html")
+        if response_data.get("success") == True:
+            resp = make_response(render_template("home.html"))
+            resp.set_cookie("token", response_data.get("token", ""))
+            return resp
         else:
             message = response_data.get("message")
             return render_template("signin.html", message=message)
