@@ -41,7 +41,21 @@ def signin():
         email = request.form["email"]
         password = request.form["password"]
 
-        return f"Signed in successfully! Email: {email}"
+        data = {
+            "email": email,
+            "password": password,
+        }
+
+        url = "http://localhost:8000/api/user/login"
+        headers = {"Content-Type": "application/json", "Accept": "application/json"}
+        response = requests.post(url, json=data, headers=headers)
+        response_data = response.json()
+
+        if response_data.get("success") == "true":
+            return render_template("home.html")
+        else:
+            message = response_data.get("message")
+            return render_template("signin.html", message=message)
 
 
 if __name__ == "__main__":
