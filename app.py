@@ -27,7 +27,7 @@ def signup():
         response_data = response.json()
 
         if response_data.get("success") == "true":
-            return f"Signed up successfully! Name: {name}, Email: {email}"
+            return render_template("home.html")
         else:
             message = response_data.get("message")
             return render_template("signup.html", message=message)
