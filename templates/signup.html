@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -56,9 +57,17 @@
         }
     </style>
 </head>
+
 <body>
     <div class="signup-form">
         <h2>Sign Up</h2>
+        {% if message %}
+        <div id="errorAlert" class="alert alert-danger" style="color: hsl(211, 100%, 50%);;">
+            <ul>
+                {{ message }}
+            </ul>
+        </div>
+        {% endif %}
         <form action="/signup" method="POST">
             <input type="text" name="name" placeholder="Name" required>
             <input type="email" name="email" placeholder="Email" required>
@@ -69,4 +78,13 @@
         <p>Already have an account? <a href="/signin">Sign In</a></p>
     </div>
 </body>
+
+{% if message %}
+<script>
+    setTimeout(function () {
+        document.getElementById('errorAlert').style.display = 'none';
+    }, 2000);
+</script>
+{% endif %}
+
 </html>

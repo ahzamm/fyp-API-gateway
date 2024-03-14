@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request
+import requests
 
 app = Flask(__name__)
 
@@ -13,7 +14,23 @@ def signup():
         password = request.form["password"]
         confirm_password = request.form["confirm_password"]
 
-        return f"Signed up successfully! Name: {name}, Email: {email}"
+        data = {
+            "name": name,
+            "email": email,
+            "password": password,
+            "password_confirmation": confirm_password,
+        }
+
+        url = "http://localhost:8000/api/user/register"
+        headers = {"Content-Type": "application/json", "Accept": "application/json"}
+        response = requests.post(url, json=data, headers=headers)
+        response_data = response.json()
+
+        if response_data.get("success") == "true":
+            return f"Signed up successfully! Name: {name}, Email: {email}"
+        else:
+            message = response_data.get("message")
+            return render_template("signup.html", message=message)
 
 
 @app.route("/signin", methods=["GET", "POST"])
