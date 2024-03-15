@@ -70,6 +70,8 @@
                 fetch('/home', {
                     method: 'POST',
                     body: formData
+                }).then(response => {
+                    location.reload();
                 })
             }
         }
