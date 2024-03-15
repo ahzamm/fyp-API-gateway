@@ -9,7 +9,16 @@ def signup():
     if request.method == "GET":
         token = request.cookies.get("token")
         if token:
-            return redirect("/home")
+            url = "http://localhost:8000/api/user/profile"
+            headers = {
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+                "Authorization": "Bearer " + token,
+            }
+            response = requests.get(url, headers=headers)
+            response_data = response.json()
+            if response_data.get("success") == True:
+                return redirect("/home")
         return render_template("signup.html")
     if request.method == "POST":
         name = request.form["name"]
@@ -43,7 +52,16 @@ def signin():
     if request.method == "GET":
         token = request.cookies.get("token")
         if token:
-            return redirect("/home")
+            url = "http://localhost:8000/api/user/profile"
+            headers = {
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+                "Authorization": "Bearer " + token,
+            }
+            response = requests.get(url, headers=headers)
+            response_data = response.json()
+            if response_data.get("success") == True:
+                return redirect("/home")
         return render_template("signin.html")
     if request.method == "POST":
         email = request.form["email"]
