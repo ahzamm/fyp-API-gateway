@@ -10,13 +10,28 @@
             padding: 20px;
         }
 
+        .search-bar {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .search-bar button {
+            background-color: #7cc27c;
+            width: 10%;
+        }
+
+        .search-bar button:hover {
+            background-color: #7cc27c;
+        }
+
         #search {
-            width: 100%;
+            width: 90%;
             padding: 10px;
             font-size: 18px;
-            margin-bottom: 20px;
             border-radius: 5px;
             border: 1px solid #ccc;
+            margin-right: 10px;
         }
 
         .image-grid {
@@ -53,7 +68,10 @@
 </head>
 
 <body>
-    <input type="text" id="search" placeholder="Search Image">
+    <div class="search-bar">
+        <input type="text" id="search" placeholder="Search Image">
+        <button id="submit">Search</button>
+    </div>
     <div class="image-grid">
         {% for image in images %}
         <img src="{{ image }}" alt="Image">
