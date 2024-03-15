@@ -58,11 +58,15 @@
         {% for image in images %}
         <img src="{{ image }}" alt="Image">
         {% endfor %}
-        <button onclick="uploadImage()">+</button>
+        <input type="file" id="upload" accept=".jpg" style="display: none;" onchange="handleImageUpload(this)">
+        <button onclick="document.getElementById('upload').click()">+</button>
     </div>
     <script>
-        function uploadImage() {
-            // Add your image upload logic here
+        function handleImageUpload(input) {
+            if (input.files && input.files[0]) {
+                // Add your image upload logic here
+                // You can access the selected file using input.files[0]
+            }
         }
     </script>
 </body>
