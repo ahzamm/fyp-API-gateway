@@ -88,7 +88,20 @@ def signin():
 
 @app.route("/home", methods=["GET", "POST"])
 def home():
-    return render_template("home.html")
+    if request.method == "GET":
+        token = request.cookies.get("token")
+        if token:
+            url = "http://localhost:8000/api/user/profile"
+            headers = {
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+                "Authorization": "Bearer " + token,
+            }
+            response = requests.get(url, headers=headers)
+            response_data = response.json()
+            if response_data.get("success") == True:
+                return render_template("home.html")
+        return redirect("signin")
 
 
 if __name__ == "__main__":
