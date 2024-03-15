@@ -1,5 +1,5 @@
 import requests
-from flask import Flask, make_response, render_template, request
+from flask import Flask, make_response, redirect, render_template, request
 
 app = Flask(__name__)
 
@@ -7,6 +7,9 @@ app = Flask(__name__)
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
     if request.method == "GET":
+        token = request.cookies.get("token")
+        if token:
+            return redirect("/home")
         return render_template("signup.html")
     if request.method == "POST":
         name = request.form["name"]
@@ -38,6 +41,9 @@ def signup():
 @app.route("/signin", methods=["GET", "POST"])
 def signin():
     if request.method == "GET":
+        token = request.cookies.get("token")
+        if token:
+            return redirect("/home")
         return render_template("signin.html")
     if request.method == "POST":
         email = request.form["email"]
@@ -60,6 +66,11 @@ def signin():
         else:
             message = response_data.get("message")
             return render_template("signin.html", message=message)
+
+
+@app.route("/home", methods=["GET", "POST"])
+def home():
+    return render_template("home.html")
 
 
 if __name__ == "__main__":
