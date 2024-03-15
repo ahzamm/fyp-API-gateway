@@ -4,6 +4,7 @@ from io import BytesIO
 import requests
 from flask import Flask, make_response, redirect, render_template, request
 from PIL import Image
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 
@@ -110,14 +111,29 @@ def signin():
 
 @app.route("/home", methods=["GET", "POST"])
 def home():
-    url = " http://localhost:5001/retrieve-all-photos/?user_id=1"
-    response = requests.get(url)
-    images_base64 = response.json()
-    images_data_urls = []
-    for image_base64 in images_base64:
-        image_data_url = "data:image/jpeg;base64," + image_base64
-        images_data_urls.append(image_data_url)
-    return render_template("home.html", images=images_data_urls)
+    if request.method == "GET":
+        url = " http://localhost:5001/retrieve-all-photos/?user_id=1"
+        response = requests.get(url)
+        images_base64 = response.json()
+        images_data_urls = []
+        for image_base64 in images_base64:
+            image_data_url = "data:image/jpeg;base64," + image_base64
+            images_data_urls.append(image_data_url)
+        return render_template("home.html", images=images_data_urls)
+
+    if request.method == "POST":
+        file = request.files["image"]
+        if file:
+            filename = secure_filename(file.filename)
+            url = "http://127.0.0.1:5001/photos"
+            data = {
+                "vector_id": 123,
+                "filename": filename,
+                "user_id": 1,
+            }
+            files = {"image": (filename, file)}
+            response = requests.post(url, data=data, files=files)
+        return redirect("/home")
 
 
 if __name__ == "__main__":
