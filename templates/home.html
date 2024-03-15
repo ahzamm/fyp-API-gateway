@@ -68,10 +68,11 @@
 </head>
 
 <body>
-    <div class="search-bar">
+
+    <form class="search-bar" action="/signin" method="POST">
         <input type="text" id="search" placeholder="Search Image">
-        <button id="submit">Search</button>
-    </div>
+        <button id="submit" type="submit">Search</button>
+    </form>
     <div class="image-grid">
         {% for image in images %}
         <img src="{{ image }}" alt="Image">
