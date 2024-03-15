@@ -30,7 +30,7 @@ def signup():
         response_data = response.json()
 
         if response_data.get("success") == True:
-            resp = make_response(render_template("home.html"))
+            resp = make_response(redirect("/home"))
             resp.set_cookie("token", response_data.get("token", ""))
             return resp
         else:
@@ -60,7 +60,7 @@ def signin():
         response_data = response.json()
 
         if response_data.get("success") == True:
-            resp = make_response(render_template("home.html"))
+            resp = make_response(redirect("/home"))
             resp.set_cookie("token", response_data.get("token", ""))
             return resp
         else:
