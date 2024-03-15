@@ -112,7 +112,7 @@ def signin():
 @app.route("/home", methods=["GET", "POST"])
 def home():
     if request.method == "GET":
-        url = " http://localhost:5001/retrieve-all-photos/?user_id=1"
+        url = " http://localhost:5002/retrieve-all-photos/?user_id=1"
         response = requests.get(url)
         images_base64 = response.json()
         images_data_urls = []
@@ -125,13 +125,22 @@ def home():
         file = request.files["image"]
         if file:
             filename = secure_filename(file.filename)
+            files = {"image": (filename, file)}
             url = "http://127.0.0.1:5001/photos"
             data = {
-                "vector_id": 123,
+                "user_id": 1,
+            }
+            response = requests.post(url, data=data, files=files)
+            vector_id = response.json().get("vector_id")
+
+            file.seek(0)
+            files = {"image": (filename, file)}
+            url = "http://127.0.0.1:5002/photos"
+            data = {
+                "vector_id": vector_id,
                 "filename": filename,
                 "user_id": 1,
             }
-            files = {"image": (filename, file)}
             response = requests.post(url, data=data, files=files)
         return redirect("/home")
 
