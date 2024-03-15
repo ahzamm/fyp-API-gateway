@@ -115,11 +115,9 @@ def home():
     images_base64 = response.json()
     images_data_urls = []
     for image_base64 in images_base64:
-        image_data_url = "data:image/jpeg;base64," + image_base64  # Create a data URL
+        image_data_url = "data:image/jpeg;base64," + image_base64
         images_data_urls.append(image_data_url)
-    return render_template(
-        "home.html", images=images_data_urls
-    )
+    return render_template("home.html", images=images_data_urls)
 
 
 if __name__ == "__main__":

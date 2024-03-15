@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>Image Gallery</title>
     <style>
@@ -8,6 +9,7 @@
             background-color: #f0f0f0;
             padding: 20px;
         }
+
         #search {
             width: 100%;
             padding: 10px;
@@ -16,22 +18,28 @@
             border-radius: 5px;
             border: 1px solid #ccc;
         }
+
         .image-grid {
             display: flex;
             flex-wrap: wrap;
             justify-content: space-around;
         }
-        .image-grid img, .image-grid button {
-            width: 100px;
-            height: 100px;
+
+        .image-grid img,
+        .image-grid button {
+            width: 200px;
+            height: 200px;
             margin: 10px;
             border-radius: 5px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
-            transition: all 0.3s cubic-bezier(.25,.8,.25,1);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+            transition: all 0.3s cubic-bezier(.25, .8, .25, 1);
         }
-        .image-grid img:hover, .image-grid button:hover {
-            box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+
+        .image-grid img:hover,
+        .image-grid button:hover {
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
         }
+
         .image-grid button {
             background-color: #4CAF50;
             color: white;
@@ -40,12 +48,13 @@
         }
     </style>
 </head>
+
 <body>
     <input type="text" id="search" placeholder="Search Image">
     <div class="image-grid">
-        <img src="image1.jpg" alt="Image 1">
-        <img src="image2.jpg" alt="Image 2">
-        <img src="image3.jpg" alt="Image 3">
+        {% for image in images %}
+        <img src="{{ image }}" alt="Image">
+        {% endfor %}
         <button onclick="uploadImage()">+</button>
     </div>
     <script>
@@ -55,10 +64,4 @@
     </script>
 </body>
 
-{% for image in images %}
-<img src="{{ image }}" alt="Image">
-{% endfor %}
-
 </html>
-
-
