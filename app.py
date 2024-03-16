@@ -155,7 +155,11 @@ def home():
             }
             data = {"query": query, "user_id": 1}
             response = requests.post(url, data=json.dumps(data), headers=headers)
-            print("🚀🚀🚀", response.json())
+            image_ids = response.json().get('image_ids')
+
+            url = f"http://127.0.0.1:5002/retrieve-photos/?vector_ids={image_ids}"
+            response = requests.get(url)
+
             return redirect("/home")
 
 
