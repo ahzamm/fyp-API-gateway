@@ -1,4 +1,5 @@
 import base64
+import json
 from io import BytesIO
 
 import requests
@@ -122,26 +123,39 @@ def home():
         return render_template("home.html", images=reversed(images_data_urls))
 
     if request.method == "POST":
-        file = request.files["image"]
-        if file:
-            filename = secure_filename(file.filename)
-            files = {"image": (filename, file)}
-            url = "http://127.0.0.1:5001/photos"
-            data = {
-                "user_id": 1,
-            }
-            response = requests.post(url, data=data, files=files)
-            vector_id = response.json().get("vector_id")
+        if "image" in request.files:
+            file = request.files["image"]
+            if file:
+                filename = secure_filename(file.filename)
+                files = {"image": (filename, file)}
+                url = "http://127.0.0.1:5001/photos"
+                data = {
+                    "user_id": 1,
+                }
+                response = requests.post(url, data=data, files=files)
+                vector_id = response.json().get("vector_id")
 
-            file.seek(0)
-            files = {"image": (filename, file)}
-            url = "http://127.0.0.1:5002/photos"
-            data = {
-                "vector_id": vector_id,
-                "filename": filename,
-                "user_id": 1,
+                file.seek(0)
+                files = {"image": (filename, file)}
+                url = "http://127.0.0.1:5002/photos"
+                data = {
+                    "vector_id": vector_id,
+                    "filename": filename,
+                    "user_id": 1,
+                }
+                response = requests.post(url, data=data, files=files)
+                return redirect("/home")
+
+        query = request.form["search"]
+        if query:
+            url = "http://127.0.0.1:5001/query"
+            headers = {
+                "Content-Type": "application/json",
+                "Accept": "application/json",
             }
-            response = requests.post(url, data=data, files=files)
+            data = {"query": query, "user_id": 1}
+            response = requests.post(url, data=json.dumps(data), headers=headers)
+            print("🚀🚀🚀", response.json())
             return redirect("/home")
 
 
