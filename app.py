@@ -142,7 +142,7 @@ def home():
                 "user_id": 1,
             }
             response = requests.post(url, data=data, files=files)
-        return redirect("/home")
+            return redirect("/home")
 
 
 if __name__ == "__main__":
