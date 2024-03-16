@@ -155,12 +155,16 @@ def home():
             }
             data = {"query": query, "user_id": 1}
             response = requests.post(url, data=json.dumps(data), headers=headers)
-            image_ids = response.json().get('image_ids')
+            image_ids = response.json().get("image_ids")
 
             url = f"http://127.0.0.1:5002/retrieve-photos/?vector_ids={image_ids}"
             response = requests.get(url)
-
-            return redirect("/home")
+            images_base64 = response.json()
+            images_data_urls = []
+            for image_base64 in images_base64:
+                image_data_url = "data:image/jpeg;base64," + image_base64
+                images_data_urls.append(image_data_url)
+            return render_template("home.html", images=images_data_urls)
 
 
 if __name__ == "__main__":
