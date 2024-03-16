@@ -119,7 +119,7 @@ def home():
         for image_base64 in images_base64:
             image_data_url = "data:image/jpeg;base64," + image_base64
             images_data_urls.append(image_data_url)
-        return render_template("home.html", images=images_data_urls)
+        return render_template("home.html", images=reversed(images_data_urls))
 
     if request.method == "POST":
         file = request.files["image"]

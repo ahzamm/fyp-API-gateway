@@ -74,11 +74,11 @@
         <button id="submit" type="submit">Search</button>
     </form>
     <div class="image-grid">
+        <input type="file" id="upload" accept=".jpg" style="display: none;" onchange="handleImageUpload(this)">
+        <button onclick="document.getElementById('upload').click()">+</button>
         {% for image in images %}
         <img src="{{ image }}" alt="Image">
         {% endfor %}
-        <input type="file" id="upload" accept=".jpg" style="display: none;" onchange="handleImageUpload(this)">
-        <button onclick="document.getElementById('upload').click()">+</button>
     </div>
     <script>
         function handleImageUpload(input) {
