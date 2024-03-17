@@ -92,6 +92,13 @@ def signin():
             return render_template("signin.html", message=message)
 
 
+@app.route("/logout", methods=["GET"])
+def logout():
+    resp = make_response(redirect("/signin"))
+    resp.set_cookie("token", "", expires=0)
+    return resp
+
+
 @app.route("/home", methods=["GET", "POST"])
 def home():
     token = request.cookies.get("token")

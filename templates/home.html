@@ -279,6 +279,13 @@
           location.reload();
         });
       }
+
+      document
+        .querySelector(".logout-button")
+        .addEventListener("click", function (event) {
+          event.preventDefault();
+          window.location.href = "/logout";
+        });
     </script>
   </body>
 </html>
