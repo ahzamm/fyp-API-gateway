@@ -2,7 +2,8 @@
 <html>
 
 <head>
-    <title>Image Gallery</title>
+    <title>LensLook</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -64,15 +65,65 @@
             font-size: 24px;
             cursor: pointer;
         }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #7cc27c;
+        }
+
+        .user-controls {
+            display: flex;
+            align-items: center;
+        }
+
+        .user-controls button {
+            background-color: #7cc27c;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            margin-left: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .user-controls button:hover {
+            background-color: #52a152;
+        }
+
+        .user-controls .profile-button {
+            background-color: #bbbcbb;
+        }
+
+        .user-controls .profile-button:hover {
+            background-color: #a2a3a2;
+        }
     </style>
 </head>
 
 <body>
 
+    <div class="header">
+        <div class="logo">LensLook</div>
+        <div class="user-controls">
+            <button class="profile-button"><i class="fas fa-user"></i> Profile</button>
+            <button class="logout-button"><i class="fas fa-sign-out-alt"></i> Logout</button>
+        </div>
+    </div>
+
     <form class="search-bar" action="/home" method="POST">
         <input type="text" name="search" id="search" placeholder="Search Image">
         <button id="submit" type="submit">Search</button>
     </form>
+
     <div class="image-grid">
         <input type="file" id="upload" accept=".jpg" style="display: none;" onchange="handleImageUpload(this)">
         <button onclick="document.getElementById('upload').click()">+</button>
@@ -80,6 +131,7 @@
         <img src="{{ image }}" alt="Image">
         {% endfor %}
     </div>
+
     <script>
         function handleImageUpload(input) {
             if (input.files && input.files[0]) {
