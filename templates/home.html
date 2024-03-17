@@ -1,102 +1,72 @@
 <!DOCTYPE html>
 <html>
-
-<head>
+  <head>
     <title>LensLook</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='home.css') }}">
-</head>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='home.css') }}"
+    />
+    <script src="{{ url_for('static', filename='home.js') }}" defer></script>
+  </head>
 
-<body>
-
-    <div id="loading"
-        style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4);">
-        <div
-            style="background-color: #fefefe; margin: 15% auto; padding: 20px; border: 1px solid #888; width: 80px; height: 80px; border-radius: 50%; animation: pulse 2s infinite;">
-        </div>
+  <body>
+    <div
+      id="loading"
+      style="
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.4);
+      "
+    >
+      <div
+        style="
+          background-color: #fefefe;
+          margin: 15% auto;
+          padding: 20px;
+          border: 1px solid #888;
+          width: 80px;
+          height: 80px;
+          border-radius: 50%;
+          animation: pulse 2s infinite;
+        "
+      ></div>
     </div>
 
-
-
     <div class="header">
-        <div class="logo">LensLook</div>
-        <div class="user-controls">
-            <button class="profile-button"><i class="fas fa-user"></i> Profile</button>
-            <button class="logout-button"><i class="fas fa-sign-out-alt"></i> Logout</button>
-        </div>
+      <div class="logo">LensLook</div>
+      <div class="user-controls">
+        <button class="profile-button">
+          <i class="fas fa-user"></i> Profile
+        </button>
+        <button class="logout-button">
+          <i class="fas fa-sign-out-alt"></i> Logout
+        </button>
+      </div>
     </div>
 
     <form class="search-bar" action="/home" method="POST">
-        <input type="text" name="search" id="search" placeholder="Search Image">
-        <button id="submit" type="submit">Search</button>
+      <input type="text" name="search" id="search" placeholder="Search Image" />
+      <button id="submit" type="submit">Search</button>
     </form>
 
     <div class="image-grid">
-        <div class="drop-zone" id="drop-zone">
-            Drag and drop an image here or click to upload
-        </div>
+      <div class="drop-zone" id="drop-zone">
+        Drag and drop an image here or click to upload
+      </div>
 
-        {% for image in images %}
-        <img src="{{ image }}" alt="Image">
-        {% endfor %}
+      {% for image in images %}
+      <img src="{{ image }}" alt="Image" />
+      {% endfor %}
     </div>
-
-    <script>
-        const dropZone = document.querySelector('#drop-zone');
-
-        dropZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            dropZone.classList.add('dragover');
-        });
-
-        dropZone.addEventListener('dragleave', () => {
-            dropZone.classList.remove('dragover');
-        });
-
-        dropZone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            dropZone.classList.remove('dragover');
-            const files = e.dataTransfer.files;
-            handleImageUpload(files[0]);
-        });
-
-        dropZone.addEventListener('click', () => {
-            const fileInput = document.createElement('input');
-            fileInput.type = 'file';
-            fileInput.accept = '.jpg';
-            fileInput.addEventListener('change', () => handleImageUpload(fileInput.files[0]));
-            fileInput.click();
-        });
-
-        function handleImageUpload(file) {
-            if (file.type !== 'image/jpeg') {
-                alert('Only .jpg images are allowed!');
-                return;
-            }
-
-            // Show the loading animation
-            document.getElementById('loading').style.display = 'block';
-
-            const img = document.createElement('img');
-            img.src = URL.createObjectURL(file);
-            img.onload = () => URL.revokeObjectURL(img.src);
-            dropZone.innerHTML = '';
-            dropZone.append(img);
-
-            var formData = new FormData();
-            formData.append('image', file);
-
-            fetch('/home', {
-                method: 'POST',
-                body: formData
-            }).then(response => {
-                // Hide the loading animation
-                document.getElementById('loading').style.display = 'none';
-                location.reload();
-            });
-        }
-
-    </script>
-</body>
-
+  </body>
 </html>
