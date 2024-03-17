@@ -11,6 +11,32 @@
             padding: 20px;
         }
 
+        /* Add this style for the drop zone */
+        .drop-zone {
+            border: 2px dashed #494949;
+            border-radius: 20px;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            cursor: pointer;
+            color: #494949;
+        }
+
+        /* Add this style for the drop zone when dragging over */
+        .drop-zone.dragover {
+            border-color: #000;
+            color: #000;
+        }
+
+        /* Add this style for the drop zone when an image is dropped */
+        .drop-zone img {
+            max-width: 100%;
+            max-height: 100%;
+            display: block;
+        }
+
         .search-bar {
             display: flex;
             justify-content: space-between;
@@ -130,26 +156,68 @@
     </form>
 
     <div class="image-grid">
-        <input type="file" id="upload" accept=".jpg" style="display: none;" onchange="handleImageUpload(this)">
-        <button onclick="document.getElementById('upload').click()">+</button>
+        <div class="drop-zone" id="drop-zone">
+            Drag and drop an image here or click to upload
+        </div>
+
+        <!-- <input type="file" id="upload" accept=".jpg" style="display: none;" onchange="handleImageUpload(this)">
+        <button onclick="document.getElementById('upload').click()">+</button> -->
+
         {% for image in images %}
         <img src="{{ image }}" alt="Image">
         {% endfor %}
     </div>
 
     <script>
-        function handleImageUpload(input) {
-            if (input.files && input.files[0]) {
-                var formData = new FormData();
-                formData.append('image', input.files[0]);
+        // Add this script for the drag and drop functionality
+        const dropZone = document.querySelector('#drop-zone');
 
-                fetch('/home', {
-                    method: 'POST',
-                    body: formData
-                }).then(response => {
-                    location.reload();
-                })
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            handleImageUpload(files[0]);
+        });
+
+        dropZone.addEventListener('click', () => {
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = '.jpg';
+            fileInput.addEventListener('change', () => handleImageUpload(fileInput.files[0]));
+            fileInput.click();
+        });
+
+        function handleImageUpload(file) {
+
+            if (file.type !== 'image/jpeg') {
+                alert('Only .jpg images are allowed!');
+                return;
             }
+
+            const img = document.createElement('img');
+            img.src = URL.createObjectURL(file);
+            img.onload = () => URL.revokeObjectURL(img.src);
+            dropZone.innerHTML = '';
+            dropZone.append(img);
+
+            var formData = new FormData();
+            formData.append('image', file);
+
+            fetch('/home', {
+                method: 'POST',
+                body: formData
+            }).then(response => {
+                location.reload();
+            });
         }
     </script>
 </body>
