@@ -1,28 +1,17 @@
 import json
 import os
-import pathlib
+import random
+import string
+from datetime import timedelta
 
 import google.auth.transport.requests
 import requests
-from dotenv import load_dotenv
-from flask import (
-    Flask,
-    abort,
-    make_response,
-    redirect,
-    render_template,
-    request,
-    session,
-)
+from flask import (Flask, make_response, redirect, render_template, request,
+                   session)
 from google.oauth2 import id_token
 from google_auth_oauthlib.flow import Flow
 from pip._vendor import cachecontrol
 from werkzeug.utils import secure_filename
-
-
-import random
-import string
-
 
 app = Flask(__name__)
 
@@ -127,7 +116,9 @@ def callback():
 
         if response_data.get("success") == True:
             resp = make_response(redirect("/home"))
-            resp.set_cookie("token", response_data.get("token", ""))
+            resp.set_cookie(
+                "token", response_data.get("token", ""), max_age=timedelta(days=1)
+            )
             return resp
         else:
             message = response_data.get("message")
@@ -146,7 +137,9 @@ def callback():
         response_data = response.json()
         if response_data.get("success") == True:
             resp = make_response(redirect("/home"))
-            resp.set_cookie("token", response_data.get("token", ""))
+            resp.set_cookie(
+                "token", response_data.get("token", ""), max_age=timedelta(days=1)
+            )
             return resp
         else:
             message = response_data.get("message")
@@ -189,7 +182,9 @@ def signup():
 
         if response_data.get("success") == True:
             resp = make_response(redirect("/home"))
-            resp.set_cookie("token", response_data.get("token", ""))
+            resp.set_cookie(
+                "token", response_data.get("token", ""), max_age=timedelta(days=1)
+            )
             return resp
         else:
             message = response_data.get("message")
