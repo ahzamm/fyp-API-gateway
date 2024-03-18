@@ -19,12 +19,22 @@ from google_auth_oauthlib.flow import Flow
 from pip._vendor import cachecontrol
 from werkzeug.utils import secure_filename
 
+
+import random
+import string
+
+
 app = Flask(__name__)
 
 
 google_client_id = os.getenv("CLIENT_ID")
 app.secret_key = os.getenv("CLIENT_SECRET")
 project_id = os.getenv("PROJECT_ID")
+
+
+def generate_random_string(length):
+    characters = string.ascii_letters + string.digits
+    return "".join(random.choice(characters) for _ in range(length))
 
 
 @app.route("/login-with-google", methods=["GET"])
@@ -92,8 +102,55 @@ def callback():
     id_info = id_token.verify_oauth2_token(
         id_token=credentials.id_token, request=token_request, audience=google_client_id
     )
-    print("🚀🚀🚀", id_info)
-    return redirect("/signin")
+    email = id_info.get("email")
+    name = id_info.get("name")
+    picture = id_info.get("picture")
+
+    url = f"http://localhost:8001/api/user/check-email/?email={email}"
+    response = requests.get(url)
+    response_data = response.json()
+    if response_data.get("success") == False:
+        # Create user
+        random_string = generate_random_string(10)
+        data = {
+            "name": name,
+            "email": email,
+            "password": random_string,
+            "password_confirmation": random_string,
+            "avatar": picture,
+        }
+
+        url = "http://localhost:8001/api/user/register"
+        headers = {"Content-Type": "application/json", "Accept": "application/json"}
+        response = requests.post(url, json=data, headers=headers)
+        response_data = response.json()
+
+        if response_data.get("success") == True:
+            resp = make_response(redirect("/home"))
+            resp.set_cookie("token", response_data.get("token", ""))
+            return resp
+        else:
+            message = response_data.get("message")
+            return render_template("signup.html", message=message)
+
+    elif response_data.get("success") == True:
+        data = {
+            "name": name,
+            "email": email,
+            "avatar": picture,
+        }
+
+        url = "http://localhost:8001/api/user/edit-user"
+        headers = {"Content-Type": "application/json", "Accept": "application/json"}
+        response = requests.post(url, json=data, headers=headers)
+        response_data = response.json()
+        if response_data.get("success") == True:
+            resp = make_response(redirect("/home"))
+            resp.set_cookie("token", response_data.get("token", ""))
+            return resp
+        else:
+            message = response_data.get("message")
+            return render_template("signup.html", message=message)
 
 
 @app.route("/signup", methods=["GET", "POST"])
@@ -101,7 +158,7 @@ def signup():
     if request.method == "GET":
         token = request.cookies.get("token")
         if token:
-            url = "http://localhost:8000/api/user/profile"
+            url = "http://localhost:8001/api/user/profile"
             headers = {
                 "Content-Type": "application/json",
                 "Accept": "application/json",
@@ -125,7 +182,7 @@ def signup():
             "password_confirmation": confirm_password,
         }
 
-        url = "http://localhost:8000/api/user/register"
+        url = "http://localhost:8001/api/user/register"
         headers = {"Content-Type": "application/json", "Accept": "application/json"}
         response = requests.post(url, json=data, headers=headers)
         response_data = response.json()
