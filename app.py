@@ -178,9 +178,14 @@ def home():
 @app.route("/delete-image", methods=["POST"])
 def delete_image():
     vector_id = request.json["vector_id"]
-    print('🚀🚀🚀', vector_id)
-    return redirect("/home")
 
+    url = f"http://127.0.0.1:5001/photos?image_id={vector_id}"
+    requests.delete(url)
+
+    url = f"http://127.0.0.1:5002/delete-photo/?vector_id={vector_id}"
+    requests.delete(url)
+
+    return redirect("/home")
 
 
 if __name__ == "__main__":
