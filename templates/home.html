@@ -123,6 +123,27 @@
         cursor: pointer;
       }
 
+      .image-container {
+        position: relative;
+      }
+
+      .delete-icon {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        color: #000;
+        cursor: pointer;
+        display: none;
+      }
+
+      .image-container:hover .delete-icon {
+        display: block;
+      }
+
+      .delete-icon:hover {
+        color: red;
+      }
+
       .header {
         display: flex;
         justify-content: space-between;
@@ -228,7 +249,10 @@
       </div>
 
       {% for image in images %}
-      <img src="{{ image }}" alt="Image" />
+      <div class="image-container">
+        <img src="{{ image }}" alt="Image" />
+        <i class="fas fa-trash delete-icon" data-image="{{ image }}"></i>
+      </div>
       {% endfor %}
     </div>
 
