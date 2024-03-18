@@ -6,8 +6,7 @@ from datetime import timedelta
 
 import google.auth.transport.requests
 import requests
-from flask import (Flask, make_response, redirect, render_template, request,
-                   session)
+from flask import Flask, make_response, redirect, render_template, request, session
 from google.oauth2 import id_token
 from google_auth_oauthlib.flow import Flow
 from pip._vendor import cachecontrol
@@ -108,6 +107,7 @@ def callback():
             "password_confirmation": random_string,
             "avatar": picture,
         }
+        print('🚀🚀🚀', picture)
 
         url = "http://localhost:8001/api/user/register"
         headers = {"Content-Type": "application/json", "Accept": "application/json"}
@@ -253,8 +253,14 @@ def home():
     response_data = response.json()
     if response_data.get("success") == True:
         user_id = response_data.get("user").get("id")
+        user_name = response_data.get("user").get("name")
+        user_email = response_data.get("user").get("email")
+        user_avatar = response_data.get("user").get("avatar")
+        user_data = {"name": user_name, "email": user_email, "avatar": user_avatar}
     else:
         return redirect("/signin")
+
+    # retrieve user info here
 
     if request.method == "GET":
         url = f"http://localhost:5002/retrieve-all-photos/?user_id={user_id}"
@@ -266,7 +272,8 @@ def home():
             images_data_urls.append(
                 {"image": image_data_url, "vector_id": image_dict["vector_id"]}
             )
-        return render_template("home.html", images=reversed(images_data_urls))
+        # print('🚀🚀🚀', user_data)
+        return render_template("home.html", images=reversed(images_data_urls), user_data=user_data)
 
     if request.method == "POST":
         if "image" in request.files:
@@ -310,7 +317,7 @@ def home():
             for image_base64 in images_base64:
                 image_data_url = "data:image/jpeg;base64," + image_base64
                 images_data_urls.append(image_data_url)
-            return render_template("home.html", images=images_data_urls)
+            return render_template("home.html", images=images_data_urls, user_data=user_data)
 
 
 @app.route("/delete-image", methods=["POST"])
