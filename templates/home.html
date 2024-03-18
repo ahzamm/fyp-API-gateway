@@ -250,8 +250,15 @@
 
       {% for image in images %}
       <div class="image-container">
-        <img src="{{ image }}" alt="Image" />
-        <i class="fas fa-trash delete-icon" data-image="{{ image }}"></i>
+        <img
+          src="{{ image.image }}"
+          alt="Image"
+          data-vector-id="{{ image.vector_id }}"
+        />
+        <i
+          class="fas fa-trash delete-icon"
+          data-vector-id="{{ image.vector_id }}"
+        ></i>
       </div>
       {% endfor %}
     </div>
@@ -319,6 +326,30 @@
           event.preventDefault();
           window.location.href = "/logout";
         });
+
+        document.querySelectorAll(".delete-icon").forEach((item) => {
+        item.addEventListener("click", (event) => {
+          // Get the vector_id from the data attribute of the delete icon
+          let vector_id = event.target.dataset.vectorId;
+
+          // Now you can use the vector_id to send a request to your server to delete the image
+          fetch("/delete-image", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ vector_id: vector_id }),
+          }).then((response) => {
+            if (response.ok) {
+              // If the image was deleted successfully, you can remove the image from the DOM
+              event.target.previousElementSibling.remove();
+              event.target.remove();
+            } else {
+              console.error("Error:", response);
+            }
+          });
+        });
+      });
     </script>
   </body>
 </html>

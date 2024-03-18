@@ -123,9 +123,11 @@ def home():
         response = requests.get(url)
         images_base64 = response.json()
         images_data_urls = []
-        for image_base64 in images_base64:
-            image_data_url = "data:image/jpeg;base64," + image_base64
-            images_data_urls.append(image_data_url)
+        for image_dict in images_base64:
+            image_data_url = "data:image/jpeg;base64," + image_dict["image"]
+            images_data_urls.append(
+                {"image": image_data_url, "vector_id": image_dict["vector_id"]}
+            )
         return render_template("home.html", images=reversed(images_data_urls))
 
     if request.method == "POST":
@@ -171,6 +173,14 @@ def home():
                 image_data_url = "data:image/jpeg;base64," + image_base64
                 images_data_urls.append(image_data_url)
             return render_template("home.html", images=images_data_urls)
+
+
+@app.route("/delete-image", methods=["POST"])
+def delete_image():
+    vector_id = request.json["vector_id"]
+    print('🚀🚀🚀', vector_id)
+    return redirect("/home")
+
 
 
 if __name__ == "__main__":
