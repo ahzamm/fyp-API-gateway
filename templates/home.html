@@ -157,8 +157,8 @@
         font-size: 24px;
         font-weight: bold;
         color: #4e98e6;
-        cursor: pointer; /* Add this line to change the cursor to a hand pointer on hover */
-        transition: font-size 0.3s ease; /* Add this line to make the font size transition smoothly */
+        cursor: pointer;
+        transition: font-size 0.3s ease;
       }
 
       .logo:hover {
@@ -327,12 +327,10 @@
           window.location.href = "/logout";
         });
 
-        document.querySelectorAll(".delete-icon").forEach((item) => {
+      document.querySelectorAll(".delete-icon").forEach((item) => {
         item.addEventListener("click", (event) => {
-          // Get the vector_id from the data attribute of the delete icon
           let vector_id = event.target.dataset.vectorId;
 
-          // Now you can use the vector_id to send a request to your server to delete the image
           fetch("/delete-image", {
             method: "POST",
             headers: {
@@ -341,9 +339,7 @@
             body: JSON.stringify({ vector_id: vector_id }),
           }).then((response) => {
             if (response.ok) {
-              // If the image was deleted successfully, you can remove the image from the DOM
-              event.target.previousElementSibling.remove();
-              event.target.remove();
+              location.reload();
             } else {
               console.error("Error:", response);
             }
