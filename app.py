@@ -107,7 +107,6 @@ def callback():
             "password_confirmation": random_string,
             "avatar": picture,
         }
-        print('🚀🚀🚀', picture)
 
         url = "http://localhost:8001/api/user/register"
         headers = {"Content-Type": "application/json", "Accept": "application/json"}
@@ -272,7 +271,6 @@ def home():
             images_data_urls.append(
                 {"image": image_data_url, "vector_id": image_dict["vector_id"]}
             )
-        # print('🚀🚀🚀', user_data)
         return render_template("home.html", images=reversed(images_data_urls), user_data=user_data)
 
     if request.method == "POST":
