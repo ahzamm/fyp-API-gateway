@@ -11,6 +11,7 @@ from google.oauth2 import id_token
 from google_auth_oauthlib.flow import Flow
 from pip._vendor import cachecontrol
 from werkzeug.utils import secure_filename
+import hashlib
 
 app = Flask(__name__)
 
@@ -23,6 +24,12 @@ project_id = os.getenv("PROJECT_ID")
 def generate_random_string(length):
     characters = string.ascii_letters + string.digits
     return "".join(random.choice(characters) for _ in range(length))
+
+
+def get_avatar_link(name):
+    first_letter = name[0].upper()
+    hash_value = hashlib.md5(first_letter.encode("utf-8")).hexdigest()
+    return f"https://www.gravatar.com/avatar/{hash_value}?d=identicon"
 
 
 @app.route("/login-with-google", methods=["GET"])
@@ -172,6 +179,7 @@ def signup():
             "email": email,
             "password": password,
             "password_confirmation": confirm_password,
+            "avatar": get_avatar_link(name),
         }
 
         url = "http://localhost:8001/api/user/register"
@@ -271,7 +279,9 @@ def home():
             images_data_urls.append(
                 {"image": image_data_url, "vector_id": image_dict["vector_id"]}
             )
-        return render_template("home.html", images=reversed(images_data_urls), user_data=user_data)
+        return render_template(
+            "home.html", images=reversed(images_data_urls), user_data=user_data
+        )
 
     if request.method == "POST":
         if "image" in request.files:
@@ -315,7 +325,9 @@ def home():
             for image_base64 in images_base64:
                 image_data_url = "data:image/jpeg;base64," + image_base64
                 images_data_urls.append(image_data_url)
-            return render_template("home.html", images=images_data_urls, user_data=user_data)
+            return render_template(
+                "home.html", images=images_data_urls, user_data=user_data
+            )
 
 
 @app.route("/delete-image", methods=["POST"])
