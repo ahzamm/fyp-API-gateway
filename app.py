@@ -1,13 +1,99 @@
-import base64
 import json
-from io import BytesIO
+import os
+import pathlib
 
+import google.auth.transport.requests
 import requests
-from flask import Flask, make_response, redirect, render_template, request
-from PIL import Image
+from dotenv import load_dotenv
+from flask import (
+    Flask,
+    abort,
+    make_response,
+    redirect,
+    render_template,
+    request,
+    session,
+)
+from google.oauth2 import id_token
+from google_auth_oauthlib.flow import Flow
+from pip._vendor import cachecontrol
 from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
+
+
+google_client_id = os.getenv("CLIENT_ID")
+app.secret_key = os.getenv("CLIENT_SECRET")
+project_id = os.getenv("PROJECT_ID")
+
+
+@app.route("/login-with-google", methods=["GET"])
+def login_with_google():
+    flow = Flow.from_client_config(
+        client_config={
+            "web": {
+                "client_id": google_client_id,
+                "project_id": project_id,
+                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                "token_uri": "https://oauth2.googleapis.com/token",
+                "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+                "client_secret": app.secret_key,
+                "redirect_uris": ["http://localhost:5000/callback"],
+                "javascript_origins": ["http://localhost:5000"],
+            }
+        },
+        scopes=[
+            "https://www.googleapis.com/auth/userinfo.profile",
+            "https://www.googleapis.com/auth/userinfo.email",
+        ],
+        redirect_uri="http://localhost:5000/callback",
+    )
+    authorization_url, state = flow.authorization_url(
+        access_type="offline", include_granted_scopes="true"
+    )
+    session["state"] = state
+    return redirect(authorization_url)
+
+
+@app.route("/callback", methods=["GET"])
+def callback():
+    state = session["state"]
+
+    flow = Flow.from_client_config(
+        client_config={
+            "web": {
+                "client_id": google_client_id,
+                "project_id": project_id,
+                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                "token_uri": "https://oauth2.googleapis.com/token",
+                "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+                "client_secret": app.secret_key,
+                "redirect_uris": ["http://localhost:5000/callback"],
+                "javascript_origins": ["http://localhost:5000"],
+            }
+        },
+        scopes=[
+            "openid",
+            "https://www.googleapis.com/auth/userinfo.profile",
+            "https://www.googleapis.com/auth/userinfo.email",
+        ],
+        state=state,
+        redirect_uri="http://localhost:5000/callback",
+    )
+
+    authorization_response = request.url
+    flow.fetch_token(authorization_response=authorization_response)
+
+    credentials = flow.credentials
+    request_session = requests.session()
+    cached_session = cachecontrol.CacheControl(request_session)
+    token_request = google.auth.transport.requests.Request(session=cached_session)
+
+    id_info = id_token.verify_oauth2_token(
+        id_token=credentials.id_token, request=token_request, audience=google_client_id
+    )
+    print("🚀🚀🚀", id_info)
+    return redirect("/signin")
 
 
 @app.route("/signup", methods=["GET", "POST"])
