@@ -270,6 +270,39 @@ def home():
     # retrieve user info here
 
     if request.method == "GET":
+
+        query = request.args.get("search")
+        if query:
+            url = "http://127.0.0.1:5001/query"
+            headers = {
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+            }
+            data = {"query": query, "user_id": user_id}
+            response = requests.post(url, data=json.dumps(data), headers=headers)
+            image_ids = response.json().get("image_ids")
+
+            url = f"http://127.0.0.1:5002/retrieve-photos/?vector_ids={image_ids}"
+            response = requests.get(url)
+            images_base64 = response.json()
+            images_data_urls = []
+            for image_dict in images_base64:
+                image_data_url = "data:image/jpeg;base64," + image_dict["image"]
+                images_data_urls.append(
+                    {"image": image_data_url, "vector_id": image_dict["vector_id"]}
+                )
+            response = make_response(
+                render_template(
+                    "home.html", images=images_data_urls, user_data=user_data
+                )
+            )
+
+            response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+            response.headers["Pragma"] = "no-cache"
+            response.headers["Expires"] = "0"
+
+            return response
+        
         url = f"http://localhost:5002/retrieve-all-photos/?user_id={user_id}"
         response = requests.get(url)
         images_base64 = response.json()
@@ -313,30 +346,6 @@ def home():
                 }
                 response = requests.post(url, data=data, files=files)
                 return redirect("/home")
-
-        query = request.form["search"]
-        if query:
-            url = "http://127.0.0.1:5001/query"
-            headers = {
-                "Content-Type": "application/json",
-                "Accept": "application/json",
-            }
-            data = {"query": query, "user_id": user_id}
-            response = requests.post(url, data=json.dumps(data), headers=headers)
-            image_ids = response.json().get("image_ids")
-
-            url = f"http://127.0.0.1:5002/retrieve-photos/?vector_ids={image_ids}"
-            response = requests.get(url)
-            images_base64 = response.json()
-            images_data_urls = []
-            for image_dict in images_base64:
-                image_data_url = "data:image/jpeg;base64," + image_dict["image"]
-                images_data_urls.append(
-                    {"image": image_data_url, "vector_id": image_dict["vector_id"]}
-                )
-            return render_template(
-                "home.html", images=images_data_urls, user_data=user_data
-            )
 
 
 @app.route("/delete-image", methods=["POST"])
