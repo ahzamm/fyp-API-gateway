@@ -322,6 +322,7 @@
     </div>
 
     <script>
+      console.log("====");
       const dropZone = document.querySelector("#drop-zone");
 
       dropZone.addEventListener("dragover", (e) => {
@@ -376,13 +377,6 @@
         });
       }
 
-      document
-        .querySelector(".logout-button")
-        .addEventListener("click", function (event) {
-          event.preventDefault();
-          window.location.href = "/logout";
-        });
-
       document.querySelectorAll(".delete-icon").forEach((item) => {
         item.addEventListener("click", (event) => {
           let vector_id = event.target.dataset.vectorId;
@@ -394,11 +388,7 @@
             },
             body: JSON.stringify({ vector_id: vector_id }),
           }).then((response) => {
-            if (response.ok) {
-              location.reload();
-            } else {
-              console.error("Error:", response);
-            }
+            location.reload();
           });
         });
       });

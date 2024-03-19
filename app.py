@@ -302,7 +302,7 @@ def home():
             response.headers["Expires"] = "0"
 
             return response
-        
+
         url = f"http://localhost:5002/retrieve-all-photos/?user_id={user_id}"
         response = requests.get(url)
         images_base64 = response.json()
