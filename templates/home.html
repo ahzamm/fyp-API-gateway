@@ -170,11 +170,11 @@
       .user-controls {
         display: flex;
         align-items: center;
+        justify-content: flex-end;
       }
 
       .user-controls button {
         background-color: #4e98e6;
-        color: white;
         border: none;
         padding: 10px 15px;
         margin-left: 10px;
@@ -182,10 +182,6 @@
         cursor: pointer;
         transition: background-color 0.3s ease;
         transform: scale(1.05);
-      }
-
-      .user-controls button:hover {
-        background-color: #ff0000a5;
       }
 
       .user-controls .profile-button {
@@ -202,6 +198,54 @@
         border-radius: 50%;
         object-fit: cover;
         margin-right: 10px;
+      }
+
+      .dropdown {
+        position: relative;
+        display: inline-block;
+      }
+
+      .dropdown .dropbtn {
+        font-size: 16px;
+        border: none;
+        outline: none;
+        color: black;
+        padding: 14px 16px;
+        background-color: inherit;
+        font-family: inherit;
+        margin: 0;
+        display: flex;
+        align-items: center;
+      }
+
+      .dropdown-content {
+        display: none;
+        position: absolute;
+        background-color: #f9f9f9;
+        min-width: 160px;
+        box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+        z-index: 1;
+      }
+
+      .dropdown .dropbtn img {
+        margin-right: 10px;
+      }
+
+      .dropdown-content a {
+        float: none;
+        color: black;
+        padding: 12px 16px;
+        text-decoration: none;
+        display: block;
+        text-align: left;
+      }
+
+      .dropdown-content a:hover {
+        background-color: #ddd;
+      }
+
+      .dropdown:hover .dropdown-content {
+        display: block;
       }
     </style>
     <div
@@ -238,13 +282,18 @@
       </form>
 
       <div class="user-controls">
-        <img id="avatar" src="{{ user_data.avatar }}" alt="User Avatar" />
-        <button class="profile-button">
-          <i class="fas fa-user"></i> Profile
-        </button>
-        <button class="logout-button">
-          <i class="fas fa-sign-out-alt"></i> Logout
-        </button>
+        <div class="dropdown">
+          <button class="dropbtn">
+            <img id="avatar" src="{{ user_data.avatar }}" alt="User Avatar" />
+            {{ user_data.name }}
+            <i class="fa fa-caret-down"></i>
+          </button>
+          <div class="dropdown-content">
+            <a href="#">{{ user_data.email }}</a>
+            <a href="#">Profile</a>
+            <a href="/logout">Logout</a>
+          </div>
+        </div>
       </div>
     </div>
 
