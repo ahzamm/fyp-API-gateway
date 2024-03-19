@@ -289,8 +289,7 @@
             <i class="fa fa-caret-down"></i>
           </button>
           <div class="dropdown-content">
-            <a href="#">{{ user_data.email }}</a>
-            <a href="#">Profile</a>
+            <a>{{ user_data.email }}</a>
             <a href="/logout">Logout</a>
           </div>
         </div>
@@ -357,7 +356,6 @@
           return;
         }
 
-        // Show the loading animation
         document.getElementById("loading").style.display = "block";
 
         const img = document.createElement("img");
@@ -373,7 +371,6 @@
           method: "POST",
           body: formData,
         }).then((response) => {
-          // Hide the loading animation
           document.getElementById("loading").style.display = "none";
           location.reload();
         });
