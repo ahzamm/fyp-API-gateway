@@ -279,9 +279,16 @@ def home():
             images_data_urls.append(
                 {"image": image_data_url, "vector_id": image_dict["vector_id"]}
             )
-        return render_template(
-            "home.html", images=reversed(images_data_urls), user_data=user_data
+        response = make_response(
+            render_template(
+                "home.html", images=reversed(images_data_urls), user_data=user_data
+            )
         )
+        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+
+        return response
 
     if request.method == "POST":
         if "image" in request.files:
