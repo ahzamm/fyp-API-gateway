@@ -167,6 +167,19 @@
         color: #007bff;
       }
 
+      .logo-img {
+        width: 50px; /* adjust as needed */
+        height: 50px; /* adjust as needed */
+        position: absolute;
+        top: 35px;
+        left: 40px;
+      }
+
+      .logo-img:hover {
+        transform: scale(1.05);
+        transition: transform 0.3s ease;
+      }
+
       .user-controls {
         display: flex;
         align-items: center;
@@ -277,9 +290,15 @@
     </div>
 
     <div class="header">
-      <form action="/home" method="GET">
-        <button class="logo" type="submit">LensLook</button>
-      </form>
+      <div class="logo">
+        <a href="{{ url_for('home') }}">
+          <img
+            class="logo-img"
+            src="{{ url_for('static', filename='logo.png') }}"
+            alt="LensLook"
+          />
+        </a>
+      </div>
 
       <div class="user-controls">
         <div class="dropdown">
