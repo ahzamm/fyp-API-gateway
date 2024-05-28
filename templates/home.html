@@ -323,7 +323,7 @@
       </div>
     </div>
 
-    <form class="search-bar" action="/home" method="GET">
+    <form class="search-bar" action="/" method="GET">
       <input type="text" name="search" id="search" placeholder="Search Image" />
       <button id="submit" type="submit">Search</button>
     </form>
@@ -395,7 +395,7 @@
         var formData = new FormData();
         formData.append("image", file);
 
-        fetch("/home", {
+        fetch("/", {
           method: "POST",
           body: formData,
         }).then((response) => {

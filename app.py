@@ -121,7 +121,7 @@ def callback():
         response_data = response.json()
 
         if response_data.get("success") == True:
-            resp = make_response(redirect("/home"))
+            resp = make_response(redirect("/"))
             resp.set_cookie(
                 "token", response_data.get("token", ""), max_age=timedelta(days=1)
             )
@@ -142,7 +142,7 @@ def callback():
         response = requests.post(url, json=data, headers=headers)
         response_data = response.json()
         if response_data.get("success") == True:
-            resp = make_response(redirect("/home"))
+            resp = make_response(redirect("/"))
             resp.set_cookie(
                 "token", response_data.get("token", ""), max_age=timedelta(days=1)
             )
@@ -166,7 +166,7 @@ def signup():
             response = requests.get(url, headers=headers)
             response_data = response.json()
             if response_data.get("success") == True:
-                return redirect("/home")
+                return redirect("/")
         return render_template("signup.html")
     if request.method == "POST":
         name = request.form["name"]
@@ -188,7 +188,7 @@ def signup():
         response_data = response.json()
 
         if response_data.get("success") == True:
-            resp = make_response(redirect("/home"))
+            resp = make_response(redirect("/"))
             resp.set_cookie(
                 "token", response_data.get("token", ""), max_age=timedelta(days=1)
             )
@@ -212,7 +212,7 @@ def signin():
             response = requests.get(url, headers=headers)
             response_data = response.json()
             if response_data.get("success") == True:
-                return redirect("/home")
+                return redirect("/")
         return render_template("signin.html")
     if request.method == "POST":
         email = request.form["email"]
@@ -229,7 +229,7 @@ def signin():
         response_data = response.json()
 
         if response_data.get("success") == True:
-            resp = make_response(redirect("/home"))
+            resp = make_response(redirect("/"))
             resp.set_cookie("token", response_data.get("token", ""))
             return resp
         else:
@@ -244,7 +244,7 @@ def logout():
     return resp
 
 
-@app.route("/home", methods=["GET", "POST"])
+@app.route("/", methods=["GET", "POST"])
 def home():
     token = request.cookies.get("token")
     if token is None:
@@ -345,7 +345,7 @@ def home():
                     "user_id": user_id,
                 }
                 response = requests.post(url, data=data, files=files)
-                return redirect("/home")
+                return redirect("/")
 
 
 @app.route("/delete-image", methods=["POST"])
@@ -358,7 +358,7 @@ def delete_image():
     url = f"http://127.0.0.1:5002/delete-photo/?vector_id={vector_id}"
     requests.delete(url)
 
-    return redirect("/home")
+    return redirect("/")
 
 
 if __name__ == "__main__":
