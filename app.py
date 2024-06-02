@@ -32,6 +32,7 @@ def get_avatar_link(name):
     return f"https://www.gravatar.com/avatar/{hash_value}?d=identicon"
 
 
+# @app.route("/login-with-google", methods=["GET"])
 @app.route("/login-with-google", methods=["GET"])
 def login_with_google():
     flow = Flow.from_client_config(
@@ -48,21 +49,28 @@ def login_with_google():
             }
         },
         scopes=[
+            "openid",
             "https://www.googleapis.com/auth/userinfo.profile",
             "https://www.googleapis.com/auth/userinfo.email",
+            "https://www.googleapis.com/auth/photoslibrary",
+            "https://www.googleapis.com/auth/photoslibrary.readonly",
         ],
         redirect_uri="http://localhost:5000/callback",
     )
     authorization_url, state = flow.authorization_url(
-        access_type="offline", include_granted_scopes="true"
+        access_type="offline",
+        include_granted_scopes="true"
     )
     session["state"] = state
+    print(f"Requested scopes: {flow.oauth2session.scope}")
     return redirect(authorization_url)
-
 
 @app.route("/callback", methods=["GET"])
 def callback():
+    print('🚀🚀🚀', request.args)
+    # print('🚀  app.py:69 session["state"]:', session["state"])
     state = session["state"]
+    
 
     flow = Flow.from_client_config(
         client_config={
@@ -81,6 +89,8 @@ def callback():
             "openid",
             "https://www.googleapis.com/auth/userinfo.profile",
             "https://www.googleapis.com/auth/userinfo.email",
+            "https://www.googleapis.com/auth/photoslibrary",
+            "https://www.googleapis.com/auth/photoslibrary.readonly",
         ],
         state=state,
         redirect_uri="http://localhost:5000/callback",
@@ -93,6 +103,8 @@ def callback():
     request_session = requests.session()
     cached_session = cachecontrol.CacheControl(request_session)
     token_request = google.auth.transport.requests.Request(session=cached_session)
+    session["access_token"] = credentials.token
+
 
     id_info = id_token.verify_oauth2_token(
         id_token=credentials.id_token, request=token_request, audience=google_client_id
@@ -246,6 +258,8 @@ def logout():
 
 @app.route("/", methods=["GET", "POST"])
 def home():
+
+    # print('🚀🚀🚀', session)
     token = request.cookies.get("token")
     if token is None:
         return redirect("/signin")
@@ -359,6 +373,28 @@ def delete_image():
     requests.delete(url)
 
     return redirect("/")
+
+
+@app.route("/photos", methods=["GET"])
+def get_photos():
+    access_token = session.get("access_token")
+    if not access_token:
+        return redirect("/signin")
+
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Accept": "application/json"
+    }
+
+    url = "https://photoslibrary.googleapis.com/v1/mediaItems"
+    response = requests.get(url, headers=headers)
+    if response.status_code == 200:
+        photos_data = response.json()
+        return render_template("photos.html", photos=photos_data.get("mediaItems", []))
+    else:
+        return f"An error occurred: {response.status_code} {response.text}"
+
+
 
 
 if __name__ == "__main__":
