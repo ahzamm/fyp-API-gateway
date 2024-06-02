@@ -255,11 +255,8 @@ def logout():
     resp.set_cookie("token", "", expires=0)
     return resp
 
-
 @app.route("/", methods=["GET", "POST"])
 def home():
-
-    # print('🚀🚀🚀', session)
     token = request.cookies.get("token")
     if token is None:
         return redirect("/signin")
@@ -281,10 +278,7 @@ def home():
     else:
         return redirect("/signin")
 
-    # retrieve user info here
-
     if request.method == "GET":
-
         query = request.args.get("search")
         if query:
             url = "http://127.0.0.1:5001/query"
@@ -317,6 +311,7 @@ def home():
 
             return response
 
+        # Retrieve other images
         url = f"http://localhost:5002/retrieve-all-photos/?user_id={user_id}"
         response = requests.get(url)
         images_base64 = response.json()
@@ -326,6 +321,36 @@ def home():
             images_data_urls.append(
                 {"image": image_data_url, "vector_id": image_dict["vector_id"]}
             )
+
+        # Retrieve Google Photos with pagination
+        access_token = session.get("access_token")
+        if access_token:
+            headers = {
+                "Authorization": f"Bearer {access_token}",
+                "Accept": "application/json"
+            }
+            url = "https://photoslibrary.googleapis.com/v1/mediaItems"
+            next_page_token = None
+            while True:
+                if next_page_token:
+                    response = requests.get(url, headers=headers, params={"pageToken": next_page_token})
+                else:
+                    response = requests.get(url, headers=headers)
+                
+                if response.status_code != 200:
+                    break
+                
+                google_photos_data = response.json()
+                for item in google_photos_data.get("mediaItems", []):
+                    image_url = item.get("baseUrl") + "=w500-h500"
+                    images_data_urls.append(
+                        {"image": image_url, "vector_id": item.get("id")}
+                    )
+                
+                next_page_token = google_photos_data.get("nextPageToken")
+                if not next_page_token:
+                    break
+
         response = make_response(
             render_template(
                 "home.html", images=reversed(images_data_urls), user_data=user_data
