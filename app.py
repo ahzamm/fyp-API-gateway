@@ -67,11 +67,8 @@ def login_with_google():
 
 @app.route("/callback", methods=["GET"])
 def callback():
-    print('🚀🚀🚀', request.args)
-    # print('🚀  app.py:69 session["state"]:', session["state"])
-    state = session["state"]
+    state = request.args.get('state')
     
-
     flow = Flow.from_client_config(
         client_config={
             "web": {
