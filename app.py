@@ -32,7 +32,6 @@ def get_avatar_link(name):
     return f"https://www.gravatar.com/avatar/{hash_value}?d=identicon"
 
 
-# @app.route("/login-with-google", methods=["GET"])
 @app.route("/login-with-google", methods=["GET"])
 def login_with_google():
     flow = Flow.from_client_config(
@@ -64,6 +63,7 @@ def login_with_google():
     session["state"] = state
     print(f"Requested scopes: {flow.oauth2session.scope}")
     return redirect(authorization_url)
+
 
 @app.route("/callback", methods=["GET"])
 def callback():
@@ -251,6 +251,7 @@ def logout():
     resp = make_response(redirect("/signin"))
     resp.set_cookie("token", "", expires=0)
     return resp
+
 
 @app.route("/", methods=["GET", "POST"])
 def home():
