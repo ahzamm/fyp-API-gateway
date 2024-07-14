@@ -12,6 +12,8 @@ from google_auth_oauthlib.flow import Flow
 from pip._vendor import cachecontrol
 from werkzeug.utils import secure_filename
 import hashlib
+from google.auth.transport.requests import Request
+from google.oauth2.credentials import Credentials
 
 app = Flask(__name__)
 
@@ -61,7 +63,6 @@ def login_with_google():
         include_granted_scopes="true"
     )
     session["state"] = state
-    print(f"Requested scopes: {flow.oauth2session.scope}")
     return redirect(authorization_url)
 
 
@@ -97,14 +98,10 @@ def callback():
     flow.fetch_token(authorization_response=authorization_response)
 
     credentials = flow.credentials
-    request_session = requests.session()
-    cached_session = cachecontrol.CacheControl(request_session)
-    token_request = google.auth.transport.requests.Request(session=cached_session)
-    session["access_token"] = credentials.token
-
+    session["credentials"] = credentials_to_dict(credentials)
 
     id_info = id_token.verify_oauth2_token(
-        id_token=credentials.id_token, request=token_request, audience=google_client_id
+        id_token=credentials.id_token, request=google.auth.transport.requests.Request(), audience=google_client_id
     )
     email = id_info.get("email")
     name = id_info.get("name")
@@ -159,6 +156,7 @@ def callback():
         else:
             message = response_data.get("message")
             return render_template("signup.html", message=message)
+
 
 
 @app.route("/signup", methods=["GET", "POST"])
@@ -253,6 +251,22 @@ def logout():
     return resp
 
 
+def refresh_google_token(refresh_token):
+    url = "https://oauth2.googleapis.com/token"
+    data = {
+        "client_id": google_client_id,
+        "client_secret": app.secret_key,
+        "refresh_token": refresh_token,
+        "grant_type": "refresh_token",
+    }
+    response = requests.post(url, data=data)
+    if response.status_code == 200:
+        new_credentials = response.json()
+        return new_credentials
+    else:
+        return None
+    
+
 @app.route("/", methods=["GET", "POST"])
 def home():
     token = request.cookies.get("token")
@@ -279,6 +293,8 @@ def home():
     if request.method == "GET":
         query = request.args.get("search")
         if query:
+            images_data_urls = []
+            # Local images search
             url = "http://127.0.0.1:5001/query"
             headers = {
                 "Content-Type": "application/json",
@@ -288,15 +304,76 @@ def home():
             response = requests.post(url, data=json.dumps(data), headers=headers)
             image_ids = response.json().get("image_ids")
 
-            url = f"http://127.0.0.1:5002/retrieve-photos/?vector_ids={image_ids}"
-            response = requests.get(url)
-            images_base64 = response.json()
-            images_data_urls = []
-            for image_dict in images_base64:
-                image_data_url = "data:image/jpeg;base64," + image_dict["image"]
-                images_data_urls.append(
-                    {"image": image_data_url, "vector_id": image_dict["vector_id"]}
-                )
+            if image_ids:
+                url = f"http://127.0.0.1:5002/retrieve-photos/?vector_ids={image_ids}"
+                response = requests.get(url)
+                images_base64 = response.json()
+                for image_dict in images_base64:
+                    image_data_url = "data:image/jpeg;base64," + image_dict["image"]
+                    images_data_urls.append(
+                        {"image": image_data_url, "vector_id": image_dict["vector_id"]}
+                    )
+
+            # Google Photos search
+            credentials = Credentials(**session["credentials"])
+            if not credentials.valid:
+                if credentials.expired and credentials.refresh_token:
+                    credentials.refresh(Request())
+                    session["credentials"] = credentials_to_dict(credentials)
+                else:
+                    return redirect("/login-with-google")
+
+            access_token = credentials.token
+            if access_token:
+                headers = {
+                    "Authorization": f"Bearer {access_token}",
+                    "Accept": "application/json"
+                }
+                url = "https://photoslibrary.googleapis.com/v1/mediaItems:search"
+
+                valid_categories = [
+                    'ANIMALS', 'ARTS', 'BIRTHDAYS', 'DOCUMENTS', 'FASHION', 'FOOD', 
+                    'HOLIDAYS', 'HOUSES', 'LANDMARKS', 'LANDSCAPES', 'PEOPLE', 
+                    'PERFORMANCES', 'SPORT', 'TRAVEL', 'UTILITY', 'WEDDINGS'
+                ]
+
+                # Map query to a valid category or handle it
+                category = query.upper() if query.upper() in valid_categories else 'no-catagory'
+
+                data = {
+                    "pageSize": 100,
+                    "filters": {
+                        "contentFilter": {
+                            "includedContentCategories": [category]
+                        }
+                    }
+                }
+                response = requests.post(url, headers=headers, json=data)
+
+                if response.status_code == 200:
+                    google_photos_data = response.json()
+                    for item in google_photos_data.get("mediaItems", []):
+                        image_url = item.get("baseUrl") + "=w500-h500"
+                        images_data_urls.append(
+                            {"image": image_url, "vector_id": item.get("id")}
+                        )
+                elif response.status_code == 401:
+                    # Refresh the access token
+                    refresh_token = session["credentials"]["refresh_token"]
+                    new_credentials = refresh_google_token(refresh_token)
+                    if new_credentials:
+                        session["credentials"]["token"] = new_credentials["access_token"]
+                        headers["Authorization"] = f"Bearer {new_credentials['access_token']}"
+                        response = requests.post(url, headers=headers, json=data)
+                        if response.status_code == 200:
+                            google_photos_data = response.json()
+                            for item in google_photos_data.get("mediaItems", []):
+                                image_url = item.get("baseUrl") + "=w500-h500"
+                                images_data_urls.append(
+                                    {"image": image_url, "vector_id": item.get("id")}
+                                )
+
+
             response = make_response(
                 render_template(
                     "home.html", images=images_data_urls, user_data=user_data
@@ -321,7 +398,15 @@ def home():
             )
 
         # Retrieve Google Photos with pagination
-        access_token = session.get("access_token")
+        credentials = Credentials(**session["credentials"])
+        if not credentials.valid:
+            if credentials.expired and credentials.refresh_token:
+                credentials.refresh(Request())
+                session["credentials"] = credentials_to_dict(credentials)
+            else:
+                return redirect("/login-with-google")
+
+        access_token = credentials.token
         if access_token:
             headers = {
                 "Authorization": f"Bearer {access_token}",
@@ -384,6 +469,23 @@ def home():
                 response = requests.post(url, data=data, files=files)
                 return redirect("/")
 
+
+def credentials_to_dict(credentials):
+    return {
+        "token": credentials.token,
+        "refresh_token": credentials.refresh_token,
+        "token_uri": credentials.token_uri,
+        "client_id": credentials.client_id,
+        "client_secret": credentials.client_secret,
+        "scopes": credentials.scopes,
+    }
+
+# @app.route("/logout", methods=["GET"])
+# def logout():
+#     resp = make_response(redirect("/signin"))
+#     resp.set_cookie("token", "", expires=0)
+#     session.clear()
+#     return resp
 
 @app.route("/delete-image", methods=["POST"])
 def delete_image():
