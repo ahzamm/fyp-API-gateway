@@ -59,8 +59,7 @@ def login_with_google():
         redirect_uri="http://localhost:5000/callback",
     )
     authorization_url, state = flow.authorization_url(
-        access_type="offline",
-        include_granted_scopes="true"
+        access_type="offline", include_granted_scopes="true"
     )
     session["state"] = state
     return redirect(authorization_url)
@@ -68,8 +67,8 @@ def login_with_google():
 
 @app.route("/callback", methods=["GET"])
 def callback():
-    state = request.args.get('state')
-    
+    state = request.args.get("state")
+
     flow = Flow.from_client_config(
         client_config={
             "web": {
@@ -101,7 +100,9 @@ def callback():
     session["credentials"] = credentials_to_dict(credentials)
 
     id_info = id_token.verify_oauth2_token(
-        id_token=credentials.id_token, request=google.auth.transport.requests.Request(), audience=google_client_id
+        id_token=credentials.id_token,
+        request=google.auth.transport.requests.Request(),
+        audience=google_client_id,
     )
     email = id_info.get("email")
     name = id_info.get("name")
@@ -156,7 +157,6 @@ def callback():
         else:
             message = response_data.get("message")
             return render_template("signup.html", message=message)
-
 
 
 @app.route("/signup", methods=["GET", "POST"])
@@ -265,7 +265,7 @@ def refresh_google_token(refresh_token):
         return new_credentials
     else:
         return None
-    
+
 
 @app.route("/", methods=["GET", "POST"])
 def home():
@@ -327,26 +327,41 @@ def home():
             if access_token:
                 headers = {
                     "Authorization": f"Bearer {access_token}",
-                    "Accept": "application/json"
+                    "Accept": "application/json",
                 }
                 url = "https://photoslibrary.googleapis.com/v1/mediaItems:search"
 
                 valid_categories = [
-                    'ANIMALS', 'ARTS', 'BIRTHDAYS', 'DOCUMENTS', 'FASHION', 'FOOD', 
-                    'HOLIDAYS', 'HOUSES', 'LANDMARKS', 'LANDSCAPES', 'PEOPLE', 
-                    'PERFORMANCES', 'SPORT', 'TRAVEL', 'UTILITY', 'WEDDINGS'
+                    "ANIMALS",
+                    "ARTS",
+                    "BIRTHDAYS",
+                    "DOCUMENTS",
+                    "FASHION",
+                    "FOOD",
+                    "HOLIDAYS",
+                    "HOUSES",
+                    "LANDMARKS",
+                    "LANDSCAPES",
+                    "PEOPLE",
+                    "PERFORMANCES",
+                    "SPORT",
+                    "TRAVEL",
+                    "UTILITY",
+                    "WEDDINGS",
                 ]
 
                 # Map query to a valid category or handle it
-                category = query.upper() if query.upper() in valid_categories else 'no-catagory'
+                category = (
+                    query.upper()
+                    if query.upper() in valid_categories
+                    else "no-catagory"
+                )
 
                 data = {
                     "pageSize": 100,
                     "filters": {
-                        "contentFilter": {
-                            "includedContentCategories": [category]
-                        }
-                    }
+                        "contentFilter": {"includedContentCategories": [category]}
+                    },
                 }
                 response = requests.post(url, headers=headers, json=data)
 
@@ -362,8 +377,12 @@ def home():
                     refresh_token = session["credentials"]["refresh_token"]
                     new_credentials = refresh_google_token(refresh_token)
                     if new_credentials:
-                        session["credentials"]["token"] = new_credentials["access_token"]
-                        headers["Authorization"] = f"Bearer {new_credentials['access_token']}"
+                        session["credentials"]["token"] = new_credentials[
+                            "access_token"
+                        ]
+                        headers["Authorization"] = (
+                            f"Bearer {new_credentials['access_token']}"
+                        )
                         response = requests.post(url, headers=headers, json=data)
                         if response.status_code == 200:
                             google_photos_data = response.json()
@@ -372,7 +391,6 @@ def home():
                                 images_data_urls.append(
                                     {"image": image_url, "vector_id": item.get("id")}
                                 )
-
 
             response = make_response(
                 render_template(
@@ -410,26 +428,28 @@ def home():
         if access_token:
             headers = {
                 "Authorization": f"Bearer {access_token}",
-                "Accept": "application/json"
+                "Accept": "application/json",
             }
             url = "https://photoslibrary.googleapis.com/v1/mediaItems"
             next_page_token = None
             while True:
                 if next_page_token:
-                    response = requests.get(url, headers=headers, params={"pageToken": next_page_token})
+                    response = requests.get(
+                        url, headers=headers, params={"pageToken": next_page_token}
+                    )
                 else:
                     response = requests.get(url, headers=headers)
-                
+
                 if response.status_code != 200:
                     break
-                
+
                 google_photos_data = response.json()
                 for item in google_photos_data.get("mediaItems", []):
                     image_url = item.get("baseUrl") + "=w500-h500"
                     images_data_urls.append(
                         {"image": image_url, "vector_id": item.get("id")}
                     )
-                
+
                 next_page_token = google_photos_data.get("nextPageToken")
                 if not next_page_token:
                     break
@@ -480,12 +500,14 @@ def credentials_to_dict(credentials):
         "scopes": credentials.scopes,
     }
 
+
 # @app.route("/logout", methods=["GET"])
 # def logout():
 #     resp = make_response(redirect("/signin"))
 #     resp.set_cookie("token", "", expires=0)
 #     session.clear()
 #     return resp
+
 
 @app.route("/delete-image", methods=["POST"])
 def delete_image():
@@ -506,10 +528,7 @@ def get_photos():
     if not access_token:
         return redirect("/signin")
 
-    headers = {
-        "Authorization": f"Bearer {access_token}",
-        "Accept": "application/json"
-    }
+    headers = {"Authorization": f"Bearer {access_token}", "Accept": "application/json"}
 
     url = "https://photoslibrary.googleapis.com/v1/mediaItems"
     response = requests.get(url, headers=headers)
@@ -518,8 +537,6 @@ def get_photos():
         return render_template("photos.html", photos=photos_data.get("mediaItems", []))
     else:
         return f"An error occurred: {response.status_code} {response.text}"
-
-
 
 
 if __name__ == "__main__":
