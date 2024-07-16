@@ -294,7 +294,6 @@ def home():
         query = request.args.get("search")
         if query:
             images_data_urls = []
-            # Local images search
             url = "http://127.0.0.1:5001/query"
             headers = {
                 "Content-Type": "application/json",
@@ -313,84 +312,6 @@ def home():
                     images_data_urls.append(
                         {"image": image_data_url, "vector_id": image_dict["vector_id"]}
                     )
-
-            # Google Photos search
-            credentials = Credentials(**session["credentials"])
-            if not credentials.valid:
-                if credentials.expired and credentials.refresh_token:
-                    credentials.refresh(Request())
-                    session["credentials"] = credentials_to_dict(credentials)
-                else:
-                    return redirect("/login-with-google")
-
-            access_token = credentials.token
-            if access_token:
-                headers = {
-                    "Authorization": f"Bearer {access_token}",
-                    "Accept": "application/json",
-                }
-                url = "https://photoslibrary.googleapis.com/v1/mediaItems:search"
-
-                valid_categories = [
-                    "ANIMALS",
-                    "ARTS",
-                    "BIRTHDAYS",
-                    "DOCUMENTS",
-                    "FASHION",
-                    "FOOD",
-                    "HOLIDAYS",
-                    "HOUSES",
-                    "LANDMARKS",
-                    "LANDSCAPES",
-                    "PEOPLE",
-                    "PERFORMANCES",
-                    "SPORT",
-                    "TRAVEL",
-                    "UTILITY",
-                    "WEDDINGS",
-                ]
-
-                # Map query to a valid category or handle it
-                category = (
-                    query.upper()
-                    if query.upper() in valid_categories
-                    else "no-catagory"
-                )
-
-                data = {
-                    "pageSize": 100,
-                    "filters": {
-                        "contentFilter": {"includedContentCategories": [category]}
-                    },
-                }
-                response = requests.post(url, headers=headers, json=data)
-
-                if response.status_code == 200:
-                    google_photos_data = response.json()
-                    for item in google_photos_data.get("mediaItems", []):
-                        image_url = item.get("baseUrl") + "=w500-h500"
-                        images_data_urls.append(
-                            {"image": image_url, "vector_id": item.get("id")}
-                        )
-                elif response.status_code == 401:
-                    # Refresh the access token
-                    refresh_token = session["credentials"]["refresh_token"]
-                    new_credentials = refresh_google_token(refresh_token)
-                    if new_credentials:
-                        session["credentials"]["token"] = new_credentials[
-                            "access_token"
-                        ]
-                        headers["Authorization"] = (
-                            f"Bearer {new_credentials['access_token']}"
-                        )
-                        response = requests.post(url, headers=headers, json=data)
-                        if response.status_code == 200:
-                            google_photos_data = response.json()
-                            for item in google_photos_data.get("mediaItems", []):
-                                image_url = item.get("baseUrl") + "=w500-h500"
-                                images_data_urls.append(
-                                    {"image": image_url, "vector_id": item.get("id")}
-                                )
 
             response = make_response(
                 render_template(
@@ -446,8 +367,35 @@ def home():
                 google_photos_data = response.json()
                 for item in google_photos_data.get("mediaItems", []):
                     image_url = item.get("baseUrl") + "=w500-h500"
+                    vector_id = item.get("id")
+                    print('🚀  app.py:371 vector_id:', vector_id)
+
+                    # Check if vector_id exists in both microservices
+                    vector_exists = False
+                    for port in [5001, 5002]:
+                        check_url = f"http://127.0.0.1:{port}/check-vector"
+                        data = {'vector_id': vector_id}
+                        check_response = requests.get(check_url, data)
+                        if check_response.json().get("success") == True:
+                            vector_exists = True
+
+                    # If vector_id does not exist in both microservices, create an entry
+                    if not vector_exists:
+                        for port in [5001, 5002]:
+                            create_url = f"http://127.0.0.1:{port}/photos"
+                            data = {
+                                "vector_id": vector_id,
+                                "filename": item.get("filename", "unknown.jpg"),
+                                "user_id": user_id,
+                            }
+                            image_data = requests.post(image_url).content
+                            files = {
+                                "image": (data["filename"], image_data, "image/jpeg")
+                            }
+                            requests.post(create_url, data=data, files=files)
+
                     images_data_urls.append(
-                        {"image": image_url, "vector_id": item.get("id")}
+                        {"image": image_url, "vector_id": vector_id}
                     )
 
                 next_page_token = google_photos_data.get("nextPageToken")
@@ -500,13 +448,6 @@ def credentials_to_dict(credentials):
         "scopes": credentials.scopes,
     }
 
-
-# @app.route("/logout", methods=["GET"])
-# def logout():
-#     resp = make_response(redirect("/signin"))
-#     resp.set_cookie("token", "", expires=0)
-#     session.clear()
-#     return resp
 
 
 @app.route("/delete-image", methods=["POST"])
