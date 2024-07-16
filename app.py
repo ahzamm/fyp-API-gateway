@@ -368,7 +368,6 @@ def home():
                 for item in google_photos_data.get("mediaItems", []):
                     image_url = item.get("baseUrl") + "=w500-h500"
                     vector_id = item.get("id")
-                    print('🚀  app.py:371 vector_id:', vector_id)
 
                     # Check if vector_id exists in both microservices
                     vector_exists = False
@@ -376,7 +375,7 @@ def home():
                         check_url = f"http://127.0.0.1:{port}/check-vector"
                         data = {'vector_id': vector_id}
                         check_response = requests.get(check_url, data)
-                        if check_response.json().get("success") == True:
+                        if check_response.json().get("success") and check_response.json().get("exists"):
                             vector_exists = True
 
                     # If vector_id does not exist in both microservices, create an entry
