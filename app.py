@@ -393,10 +393,6 @@ def home():
                             }
                             requests.post(create_url, data=data, files=files)
 
-                    images_data_urls.append(
-                        {"image": image_url, "vector_id": vector_id}
-                    )
-
                 next_page_token = google_photos_data.get("nextPageToken")
                 if not next_page_token:
                     break
