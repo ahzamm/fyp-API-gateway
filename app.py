@@ -281,12 +281,13 @@ def sync_local_photos(user_id, google_photos_ids):
 
     # Delete these photos from local storage
     for photo_id in photos_to_delete:
+        if photo_id.startswith("ANU"):
         
-        delete_url = f"http://127.0.0.1:5001/photos?image_id={photo_id}"
-        requests.delete(delete_url)
+            delete_url = f"http://127.0.0.1:5001/photos?image_id={photo_id}"
+            requests.delete(delete_url)
 
-        delete_url = f"http://127.0.0.1:5002/delete-photo/?vector_id={photo_id}"
-        requests.delete(delete_url)
+            delete_url = f"http://127.0.0.1:5002/delete-photo/?vector_id={photo_id}"
+            requests.delete(delete_url)
 
 
 @app.route("/", methods=["GET", "POST"])
