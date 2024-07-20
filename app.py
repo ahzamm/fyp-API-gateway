@@ -267,6 +267,28 @@ def refresh_google_token(refresh_token):
         return None
 
 
+def sync_local_photos(user_id, google_photos_ids):
+    # Fetch locally stored photos
+    url = f"http://localhost:5001/retrieve-all-photos/?user_id={user_id}"
+    response = requests.get(url)
+    local_photos = response.json()
+
+    # Extract local photo ids
+    local_photo_ids = [photo["vector_id"] for photo in local_photos["photos"]]
+
+    # Find photos that are no longer in Google Photos
+    photos_to_delete = set(local_photo_ids) - set(google_photos_ids)
+
+    # Delete these photos from local storage
+    for photo_id in photos_to_delete:
+        
+        delete_url = f"http://127.0.0.1:5001/photos?image_id={photo_id}"
+        requests.delete(delete_url)
+
+        delete_url = f"http://127.0.0.1:5002/delete-photo/?vector_id={photo_id}"
+        requests.delete(delete_url)
+
+
 @app.route("/", methods=["GET", "POST"])
 def home():
     token = request.cookies.get("token")
@@ -346,6 +368,7 @@ def home():
                 return redirect("/login-with-google")
 
         access_token = credentials.token
+        google_photos_ids = []
         if access_token:
             headers = {
                 "Authorization": f"Bearer {access_token}",
@@ -368,6 +391,7 @@ def home():
                 for item in google_photos_data.get("mediaItems", []):
                     image_url = item.get("baseUrl") + "=w500-h500"
                     vector_id = item.get("id")
+                    google_photos_ids.append(vector_id)
 
                     # Check if vector_id exists in both microservices
                     vector_exists = False
@@ -398,6 +422,9 @@ def home():
                 next_page_token = google_photos_data.get("nextPageToken")
                 if not next_page_token:
                     break
+
+        # Sync local photos with Google Photos
+        sync_local_photos(user_id, google_photos_ids)
 
         response = make_response(
             render_template(
@@ -465,7 +492,7 @@ def get_photos():
     if not access_token:
         return redirect("/signin")
 
-    headers = {"Authorization": f"Bearer {access_token}", "Accept": "application/json"}
+    headers = {"Authorization": f"Bearer " + access_token, "Accept": "application/json"}
 
     url = "https://photoslibrary.googleapis.com/v1/mediaItems"
     response = requests.get(url, headers=headers)
