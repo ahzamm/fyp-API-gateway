@@ -373,9 +373,11 @@ def home():
                     vector_exists = False
                     for port in [5001, 5002]:
                         check_url = f"http://127.0.0.1:{port}/check-vector"
-                        data = {'vector_id': vector_id}
+                        data = {"vector_id": vector_id}
                         check_response = requests.get(check_url, data)
-                        if check_response.json().get("success") and check_response.json().get("exists"):
+                        if check_response.json().get(
+                            "success"
+                        ) and check_response.json().get("exists"):
                             vector_exists = True
 
                     # If vector_id does not exist in both microservices, create an entry
@@ -442,7 +444,6 @@ def credentials_to_dict(credentials):
         "client_secret": credentials.client_secret,
         "scopes": credentials.scopes,
     }
-
 
 
 @app.route("/delete-image", methods=["POST"])
