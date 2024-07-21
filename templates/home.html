@@ -1,291 +1,342 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>LensLook</title>
-    <link rel="icon" href="{{ url_for('static', filename='logo.png') }}" type="image/png">
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css"
-    />
-  </head>
 
-  <body>
-    <style>
-      body {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-          Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue",
-          sans-serif;
-        background-color: #f0f0f0;
-        padding: 20px;
+<head>
+  <title>LensLook</title>
+  <link rel="icon" href="{{ url_for('static', filename='logo.png') }}" type="image/png" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css" />
+</head>
+
+<body>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+        Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue",
+        sans-serif;
+      background-color: #f0f0f0;
+      padding: 20px;
+    }
+
+    @keyframes pulse {
+      0% {
+        transform: scale(1);
+        opacity: 1;
       }
 
-      @keyframes pulse {
-        0% {
-          transform: scale(1);
-          opacity: 1;
-        }
-
-        50% {
-          transform: scale(1.5);
-          opacity: 0.5;
-        }
-
-        100% {
-          transform: scale(1);
-          opacity: 1;
-        }
+      50% {
+        transform: scale(1.5);
+        opacity: 0.5;
       }
 
-      .drop-zone {
-        border: 2px dashed #494949;
-        border-radius: 20px;
-        padding: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        cursor: pointer;
-        color: #494949;
-        transition: all 0.3s ease;
-        min-height: 175px;
+      100% {
+        transform: scale(1);
+        opacity: 1;
       }
+    }
 
-      .drop-zone:hover {
-        transform: scale(1.05);
-      }
+    .drop-zone {
+      border: 2px dashed #494949;
+      border-radius: 20px;
+      padding: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      cursor: pointer;
+      color: #494949;
+      transition: all 0.3s ease;
+      min-height: 175px;
+    }
 
-      .drop-zone.dragover {
-        border-color: #000;
-        color: #000;
-      }
+    .drop-zone:hover {
+      transform: scale(1.05);
+    }
 
-      .drop-zone img {
-        max-width: 100%;
-        max-height: 100%;
-        display: block;
-      }
+    .drop-zone.dragover {
+      border-color: #000;
+      color: #000;
+    }
 
-      .search-bar {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 20px;
-      }
+    .drop-zone img {
+      max-width: 100%;
+      max-height: 100%;
+      display: block;
+    }
 
-      .search-bar button {
-        background-color: #4e98e6;
-        color: white;
-        border: none;
-        padding: 10px 15px;
-        border-radius: 5px;
-        cursor: pointer;
-        transition: background-color 0.3s ease;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-          Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue",
-          sans-serif;
-      }
+    .search-bar {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
 
-      .search-bar button:hover {
-        background-color: #007bff;
-        transform: scale(1.05);
-      }
+    .search-bar button {
+      background-color: #4e98e6;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+        Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue",
+        sans-serif;
+    }
 
-      #search {
-        width: 100%;
-        padding: 10px;
-        font-size: 18px;
-        border-radius: 5px;
-        border: 1px solid #ccc;
-        margin-right: 10px;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-          Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue",
-          sans-serif;
-      }
+    .search-bar button:hover {
+      background-color: #007bff;
+      transform: scale(1.05);
+    }
 
-      .image-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-        gap: 20px;
-      }
+    #search {
+      width: 100%;
+      padding: 10px;
+      font-size: 18px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      margin-right: 10px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+        Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue",
+        sans-serif;
+    }
 
-      .image-grid img,
-      .image-grid button {
-        width: 100%;
-        height: 200px;
-        border-radius: 10px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
-        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-      }
+    .image-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 20px;
+    }
 
-      .image-grid img:hover,
-      .image-grid button:hover {
-        box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
-        transform: scale(1.05);
-      }
+    .image-grid img,
+    .image-grid button {
+      width: 100%;
+      height: 200px;
+      border-radius: 10px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+      transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
 
-      .image-grid button:hover {
-        background-color: #4e98e6;
-      }
+    .image-grid img:hover,
+    .image-grid button:hover {
+      box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+      transform: scale(1.05);
+    }
 
-      .image-grid button {
-        background-color: #bbbcbb;
-        color: white;
-        font-size: 24px;
-        cursor: pointer;
-      }
+    .image-grid button:hover {
+      background-color: #4e98e6;
+    }
 
-      .image-container {
-        position: relative;
-      }
+    .image-grid button {
+      background-color: #bbbcbb;
+      color: white;
+      font-size: 24px;
+      cursor: pointer;
+    }
 
-      .delete-icon {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        color: #000;
-        cursor: pointer;
-        display: none;
-      }
+    .image-container {
+      position: relative;
+    }
 
-      .image-container:hover .delete-icon {
-        display: block;
-      }
+    .delete-icon {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      color: #000;
+      cursor: pointer;
+      display: none;
+    }
 
-      .delete-icon:hover {
-        color: red;
-      }
+    .image-container:hover .delete-icon {
+      display: block;
+    }
 
-      .google-icon {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        color: #000;
-        cursor: default;
-      }
+    .delete-icon:hover {
+      color: red;
+    }
 
-      .google-icon:hover {
-        color: blue;
-        /* box-shadow: 0 0 10px rgba(0, 0, 255, 0.5); */
-      }
+    .google-icon {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      color: #000;
+      cursor: default;
+    }
 
-      .header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
-      }
+    .google-icon:hover {
+      color: blue;
+      /* box-shadow: 0 0 10px rgba(0, 0, 255, 0.5); */
+    }
 
-      .logo {
-        border: none;
-        outline: none;
-        font-size: 24px;
-        font-weight: bold;
-        color: #4e98e6;
-        cursor: pointer;
-        transition: font-size 0.3s ease;
-      }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
 
-      .logo:hover {
-        font-size: 25px;
-        color: #007bff;
-      }
+    .logo {
+      border: none;
+      outline: none;
+      font-size: 24px;
+      font-weight: bold;
+      color: #4e98e6;
+      cursor: pointer;
+      transition: font-size 0.3s ease;
+    }
 
-      .logo-img {
-        width: 50px; /* adjust as needed */
-        height: 50px; /* adjust as needed */
-        position: absolute;
-        top: 35px;
-        left: 40px;
-      }
+    .logo:hover {
+      font-size: 25px;
+      color: #007bff;
+    }
 
-      .logo-img:hover {
-        transform: scale(1.05);
-        transition: transform 0.3s ease;
-      }
+    .logo-img {
+      width: 50px;
+      /* adjust as needed */
+      height: 50px;
+      /* adjust as needed */
+      position: absolute;
+      top: 35px;
+      left: 40px;
+    }
 
-      .user-controls {
-        display: flex;
-        align-items: center;
-        justify-content: flex-end;
-      }
+    .logo-img:hover {
+      transform: scale(1.05);
+      transition: transform 0.3s ease;
+    }
 
-      .user-controls button {
-        background-color: #4e98e6;
-        border: none;
-        padding: 10px 15px;
-        margin-left: 10px;
-        border-radius: 5px;
-        cursor: pointer;
-        transition: background-color 0.3s ease;
-        transform: scale(1.05);
-      }
+    .user-controls {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+    }
 
-      .user-controls .profile-button {
-        background-color: #4e98e6;
-      }
+    .user-controls button {
+      background-color: #4e98e6;
+      border: none;
+      padding: 10px 15px;
+      margin-left: 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      transform: scale(1.05);
+    }
 
-      .user-controls .profile-button:hover {
-        background-color: rgba(0, 255, 68, 0.519);
-      }
+    .user-controls .profile-button {
+      background-color: #4e98e6;
+    }
 
-      #avatar {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        object-fit: cover;
-        margin-right: 10px;
-      }
+    .user-controls .profile-button:hover {
+      background-color: rgba(0, 255, 68, 0.519);
+    }
 
-      .dropdown {
-        position: relative;
-        display: inline-block;
-      }
+    #avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-right: 10px;
+    }
 
-      .dropdown .dropbtn {
-        font-size: 16px;
-        border: none;
-        outline: none;
-        color: black;
-        padding: 14px 16px;
-        background-color: inherit;
-        font-family: inherit;
-        margin: 0;
-        display: flex;
-        align-items: center;
-      }
+    .dropdown {
+      position: relative;
+      display: inline-block;
+    }
 
-      .dropdown-content {
-        display: none;
-        position: absolute;
-        background-color: #f9f9f9;
-        min-width: 160px;
-        box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
-        z-index: 1;
-      }
+    .dropdown .dropbtn {
+      font-size: 16px;
+      border: none;
+      outline: none;
+      color: black;
+      padding: 14px 16px;
+      background-color: inherit;
+      font-family: inherit;
+      margin: 0;
+      display: flex;
+      align-items: center;
+    }
 
-      .dropdown .dropbtn img {
-        margin-right: 10px;
-      }
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      background-color: #f9f9f9;
+      min-width: 160px;
+      box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+      z-index: 1;
+    }
 
-      .dropdown-content a {
-        float: none;
-        color: black;
-        padding: 12px 16px;
-        text-decoration: none;
-        display: block;
-        text-align: left;
-      }
+    .dropdown .dropbtn img {
+      margin-right: 10px;
+    }
 
-      .dropdown-content a:hover {
-        background-color: #ddd;
-      }
+    .dropdown-content a {
+      float: none;
+      color: black;
+      padding: 12px 16px;
+      text-decoration: none;
+      display: block;
+      text-align: left;
+    }
 
-      .dropdown:hover .dropdown-content {
-        display: block;
-      }
-    </style>
-    <div
-      id="loading"
-      style="
+    .dropdown-content a:hover {
+      background-color: #ddd;
+    }
+
+    .dropdown:hover .dropdown-content {
+      display: block;
+    }
+
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 60px;
+      height: 34px;
+      margin-right: 20px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: 0.4s;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 26px;
+      width: 26px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: 0.4s;
+    }
+
+    input:checked+.slider {
+      background-color: #4e98e6;
+    }
+
+    input:checked+.slider:before {
+      transform: translateX(26px);
+    }
+
+    /* Rounded sliders */
+    .slider.round {
+      border-radius: 34px;
+    }
+
+    .slider.round:before {
+      border-radius: 50%;
+    }
+  </style>
+  <div id="loading" style="
         display: none;
         position: fixed;
         z-index: 1000;
@@ -295,10 +346,8 @@
         height: 100%;
         overflow: auto;
         background-color: rgba(0, 0, 0, 0.4);
-      "
-    >
-      <div
-        style="
+      ">
+    <div style="
           background-color: #fefefe;
           margin: 15% auto;
           padding: 20px;
@@ -307,135 +356,150 @@
           height: 80px;
           border-radius: 50%;
           animation: pulse 2s infinite;
-        "
-      ></div>
+        "></div>
+  </div>
+
+  <div class="header">
+    <div class="logo">
+      <a href="{{ url_for('home') }}">
+        <img class="logo-img" src="{{ url_for('static', filename='logo.png') }}" alt="LensLook" />
+      </a>
     </div>
 
-    <div class="header">
-      <div class="logo">
-        <a href="{{ url_for('home') }}">
-          <img
-            class="logo-img"
-            src="{{ url_for('static', filename='logo.png') }}"
-            alt="LensLook"
-          />
-        </a>
-      </div>
-
-      <div class="user-controls">
-        <div class="dropdown">
-          <button class="dropbtn">
-            <img id="avatar" src="{{ user_data.avatar }}" alt="User Avatar" />
-            {{ user_data.name }}
-            <i class="fa fa-caret-down"></i>
-          </button>
-          <div class="dropdown-content">
-            <a>{{ user_data.email }}</a>
-            <a href="/logout">Logout</a>
-          </div>
+    <div class="user-controls">
+      <div class="dropdown">
+        <button class="dropbtn">
+          <img id="avatar" src="{{ user_data.avatar }}" alt="User Avatar" />
+          {{ user_data.name }}
+          <i class="fa fa-caret-down"></i>
+        </button>
+        <div class="dropdown-content">
+          <a>{{ user_data.email }}</a>
+          <a href="/logout">Logout</a>
         </div>
       </div>
     </div>
+  </div>
 
+  <div class="search-bar">
+    <label class="switch">
+      <input type="checkbox" id="toggleGooglePhotos" checked />
+      <span class="slider round"></span>
+    </label>
     <form class="search-bar" action="/" method="GET">
       <input type="text" name="search" id="search" placeholder="Search Image" />
       <button id="submit" type="submit">Search</button>
     </form>
+  </div>
 
-    <div class="image-grid">
-      <div class="drop-zone" id="drop-zone">
-        Drag and drop an image here or click to upload
-      </div>
 
-      {% for image in images %}
-      <div class="image-container">
-        <img
-          src="{{ image.image }}"
-          alt="Image"
-          data-vector-id="{{ image.vector_id }}"
-        />
-        {% if image.vector_id.startswith('ANU') %}
-        <i class="fab fa-google google-icon" style="cursor: default;" title="Google Photo"></i>
-        {% else %}
-        <i
-          class="fas fa-trash delete-icon"
-          data-vector-id="{{ image.vector_id }}"
-        ></i>
-        {% endif %}
-      </div>
-      {% endfor %}
+  <div class="image-grid">
+    <div class="drop-zone" id="drop-zone">
+      Drag and drop an image here or click to upload
     </div>
 
-    <script>
-      const dropZone = document.querySelector("#drop-zone");
+    {% for image in images %}
+    <div class="image-container">
+      <img src="{{ image.image }}" alt="Image" data-vector-id="{{ image.vector_id }}" />
+      {% if image.vector_id.startswith('ANU') %}
+      <i class="fab fa-google google-icon" style="cursor: default" title="Google Photo"></i>
+      {% else %}
+      <i class="fas fa-trash delete-icon" data-vector-id="{{ image.vector_id }}"></i>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
 
-      dropZone.addEventListener("dragover", (e) => {
-        e.preventDefault();
-        dropZone.classList.add("dragover");
-      });
-
-      dropZone.addEventListener("dragleave", () => {
-        dropZone.classList.remove("dragover");
-      });
-
-      dropZone.addEventListener("drop", (e) => {
-        e.preventDefault();
-        dropZone.classList.remove("dragover");
-        const files = e.dataTransfer.files;
-        handleImageUpload(files[0]);
-      });
-
-      dropZone.addEventListener("click", () => {
-        const fileInput = document.createElement("input");
-        fileInput.type = "file";
-        fileInput.accept = ".jpg";
-        fileInput.addEventListener("change", () =>
-          handleImageUpload(fileInput.files[0])
-        );
-        fileInput.click();
-      });
-
-      function handleImageUpload(file) {
-        if (file.type !== "image/jpeg") {
-          alert("Only .jpg images are allowed!");
-          return;
-        }
-
-        document.getElementById("loading").style.display = "block";
-
-        const img = document.createElement("img");
-        img.src = URL.createObjectURL(file);
-        img.onload = () => URL.revokeObjectURL(img.src);
-        dropZone.innerHTML = "";
-        dropZone.append(img);
-
-        var formData = new FormData();
-        formData.append("image", file);
-
-        fetch("/", {
-          method: "POST",
-          body: formData,
-        }).then((response) => {
-          document.getElementById("loading").style.display = "none";
-          location.reload();
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const toggleGooglePhotos =
+        document.getElementById("toggleGooglePhotos");
+      toggleGooglePhotos.addEventListener("change", function () {
+        const showGooglePhotos = toggleGooglePhotos.checked;
+        const images = document.querySelectorAll(".image-container");
+        images.forEach((image) => {
+          const vectorId = image.querySelector("img").dataset.vectorId;
+          if (vectorId.startsWith("ANU")) {
+            image.style.display = showGooglePhotos ? "block" : "none";
+          }
         });
+      });
+
+      // Trigger the change event on page load to set initial state
+      toggleGooglePhotos.dispatchEvent(new Event("change"));
+    });
+
+    // Your existing drag-and-drop and delete functionality
+    const dropZone = document.querySelector("#drop-zone");
+
+    dropZone.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      dropZone.classList.add("dragover");
+    });
+
+    dropZone.addEventListener("dragleave", () => {
+      dropZone.classList.remove("dragover");
+    });
+
+    dropZone.addEventListener("drop", (e) => {
+      e.preventDefault();
+      dropZone.classList.remove("dragover");
+      const files = e.dataTransfer.files;
+      handleImageUpload(files[0]);
+    });
+
+    dropZone.addEventListener("click", () => {
+      const fileInput = document.createElement("input");
+      fileInput.type = "file";
+      fileInput.accept = ".jpg";
+      fileInput.addEventListener("change", () =>
+        handleImageUpload(fileInput.files[0])
+      );
+      fileInput.click();
+    });
+
+    function handleImageUpload(file) {
+      if (file.type !== "image/jpeg") {
+        alert("Only .jpg images are allowed!");
+        return;
       }
 
-      document.querySelectorAll(".delete-icon").forEach((item) => {
-        item.addEventListener("click", (event) => {
-          let vector_id = event.target.dataset.vectorId;
+      document.getElementById("loading").style.display = "block";
 
-          fetch("/delete-image", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ vector_id: vector_id }),
-          }).then((response) => {
-            location.reload();
-          });
+      const img = document.createElement("img");
+      img.src = URL.createObjectURL(file);
+      img.onload = () => URL.revokeObjectURL(img.src);
+      dropZone.innerHTML = "";
+      dropZone.append(img);
+
+      var formData = new FormData();
+      formData.append("image", file);
+
+      fetch("/", {
+        method: "POST",
+        body: formData,
+      }).then((response) => {
+        document.getElementById("loading").style.display = "none";
+        location.reload();
+      });
+    }
+
+    document.querySelectorAll(".delete-icon").forEach((item) => {
+      item.addEventListener("click", (event) => {
+        let vector_id = event.target.dataset.vectorId;
+
+        fetch("/delete-image", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ vector_id: vector_id }),
+        }).then((response) => {
+          location.reload();
         });
       });
-    </script>
-  </body>
+    });
+  </script>
+</body>
+
 </html>
