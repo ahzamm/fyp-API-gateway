@@ -337,26 +337,26 @@
     }
   </style>
   <div id="loading" style="
-        display: none;
-        position: fixed;
-        z-index: 1000;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        overflow: auto;
-        background-color: rgba(0, 0, 0, 0.4);
-      ">
+   display: none;
+   position: fixed;
+   z-index: 1000;
+   left: 0;
+   top: 0;
+   width: 100%;
+   height: 100%;
+   overflow: auto;
+   background-color: rgba(0, 0, 0, 0.4);
+ ">
     <div style="
-          background-color: #fefefe;
-          margin: 15% auto;
-          padding: 20px;
-          border: 1px solid #888;
-          width: 80px;
-          height: 80px;
-          border-radius: 50%;
-          animation: pulse 2s infinite;
-        "></div>
+     background-color: #fefefe;
+     margin: 15% auto;
+     padding: 20px;
+     border: 1px solid #888;
+     width: 80px;
+     height: 80px;
+     border-radius: 50%;
+     animation: pulse 2s infinite;
+   "></div>
   </div>
 
   <div class="header">
@@ -383,7 +383,7 @@
 
   <div class="search-bar">
     <label class="switch">
-      <input type="checkbox" id="toggleGooglePhotos" checked />
+      <input type="checkbox" id="toggleGooglePhotos" />
       <span class="slider round"></span>
     </label>
     <form class="search-bar" action="/" method="GET">
@@ -391,7 +391,6 @@
       <button id="submit" type="submit">Search</button>
     </form>
   </div>
-
 
   <div class="image-grid">
     <div class="drop-zone" id="drop-zone">
@@ -412,10 +411,40 @@
 
   <script>
     document.addEventListener("DOMContentLoaded", function () {
-      const toggleGooglePhotos =
-        document.getElementById("toggleGooglePhotos");
+      const toggleGooglePhotos = document.getElementById("toggleGooglePhotos");
+
+      // Function to set a cookie
+      function setCookie(name, value, days) {
+        const d = new Date();
+        d.setTime(d.getTime() + (days * 24 * 60 * 60 * 1000));
+        const expires = "expires=" + d.toUTCString();
+        document.cookie = name + "=" + value + ";" + expires + ";path=/";
+      }
+
+      // Function to get a cookie
+      function getCookie(name) {
+        const cname = name + "=";
+        const decodedCookie = decodeURIComponent(document.cookie);
+        const ca = decodedCookie.split(';');
+        for (let i = 0; i < ca.length; i++) {
+          let c = ca[i];
+          while (c.charAt(0) == ' ') {
+            c = c.substring(1);
+          }
+          if (c.indexOf(cname) == 0) {
+            return c.substring(cname.length, c.length);
+          }
+        }
+        return "";
+      }
+
+      // Check the cookie and set the switch state
+      const showGooglePhotos = getCookie("showGooglePhotos") === "true";
+      toggleGooglePhotos.checked = showGooglePhotos;
+
       toggleGooglePhotos.addEventListener("change", function () {
         const showGooglePhotos = toggleGooglePhotos.checked;
+        setCookie("showGooglePhotos", showGooglePhotos, 30);
         const images = document.querySelectorAll(".image-container");
         images.forEach((image) => {
           const vectorId = image.querySelector("img").dataset.vectorId;
