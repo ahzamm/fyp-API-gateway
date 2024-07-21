@@ -15,23 +15,12 @@
         sans-serif;
       background-color: #f0f0f0;
       padding: 20px;
+      transition: background-color 0.3s ease, color 0.3s ease;
     }
 
-    @keyframes pulse {
-      0% {
-        transform: scale(1);
-        opacity: 1;
-      }
-
-      50% {
-        transform: scale(1.5);
-        opacity: 0.5;
-      }
-
-      100% {
-        transform: scale(1);
-        opacity: 1;
-      }
+    body.dark-mode {
+      background-color: #2c2c2c;
+      color: #ffffff;
     }
 
     .drop-zone {
@@ -162,7 +151,6 @@
 
     .google-icon:hover {
       color: blue;
-      /* box-shadow: 0 0 10px rgba(0, 0, 255, 0.5); */
     }
 
     .header {
@@ -189,9 +177,7 @@
 
     .logo-img {
       width: 50px;
-      /* adjust as needed */
       height: 50px;
-      /* adjust as needed */
       position: absolute;
       top: 35px;
       left: 40px;
@@ -327,7 +313,6 @@
       transform: translateX(26px);
     }
 
-    /* Rounded sliders */
     .slider.round {
       border-radius: 34px;
     }
@@ -336,7 +321,6 @@
       border-radius: 50%;
     }
 
-    /* Additional styles for the switch label */
     .switch-container {
       display: flex;
       align-items: center;
@@ -404,6 +388,13 @@
         <span class="slider round"></span>
       </label>
     </div>
+    <div class="switch-container">
+      <label class="switch-label" for="toggleDarkMode">Dark Mode</label>
+      <label class="switch">
+        <input type="checkbox" id="toggleDarkMode" />
+        <span class="slider round"></span>
+      </label>
+    </div>
     <form class="search-bar" action="/" method="GET">
       <input type="text" name="search" id="search" placeholder="Search Image" />
       <button id="submit" type="submit">Search</button>
@@ -430,8 +421,8 @@
   <script>
     document.addEventListener("DOMContentLoaded", function () {
       const toggleGooglePhotos = document.getElementById("toggleGooglePhotos");
+      const toggleDarkMode = document.getElementById("toggleDarkMode");
 
-      // Function to set a cookie
       function setCookie(name, value, days) {
         const d = new Date();
         d.setTime(d.getTime() + (days * 24 * 60 * 60 * 1000));
@@ -439,7 +430,6 @@
         document.cookie = name + "=" + value + ";" + expires + ";path=/";
       }
 
-      // Function to get a cookie
       function getCookie(name) {
         const cname = name + "=";
         const decodedCookie = decodeURIComponent(document.cookie);
@@ -456,9 +446,14 @@
         return "";
       }
 
-      // Check the cookie and set the switch state
       const showGooglePhotos = getCookie("showGooglePhotos") === "true";
       toggleGooglePhotos.checked = showGooglePhotos;
+
+      const darkMode = getCookie("darkMode") === "true";
+      toggleDarkMode.checked = darkMode;
+      if (darkMode) {
+        document.body.classList.add("dark-mode");
+      }
 
       toggleGooglePhotos.addEventListener("change", function () {
         const showGooglePhotos = toggleGooglePhotos.checked;
@@ -472,11 +467,20 @@
         });
       });
 
-      // Trigger the change event on page load to set initial state
+      toggleDarkMode.addEventListener("change", function () {
+        const darkMode = toggleDarkMode.checked;
+        setCookie("darkMode", darkMode, 30);
+        if (darkMode) {
+          document.body.classList.add("dark-mode");
+        } else {
+          document.body.classList.remove("dark-mode");
+        }
+      });
+
       toggleGooglePhotos.dispatchEvent(new Event("change"));
+      toggleDarkMode.dispatchEvent(new Event("change"));
     });
 
-    // Your existing drag-and-drop and delete functionality
     const dropZone = document.querySelector("#drop-zone");
 
     dropZone.addEventListener("dragover", (e) => {
