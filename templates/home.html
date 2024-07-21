@@ -335,28 +335,43 @@
     .slider.round:before {
       border-radius: 50%;
     }
+
+    /* Additional styles for the switch label */
+    .switch-container {
+      display: flex;
+      align-items: center;
+      margin-right: 20px;
+    }
+
+    .switch-label {
+      margin-right: 10px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+        Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue",
+        sans-serif;
+    }
   </style>
+
   <div id="loading" style="
-   display: none;
-   position: fixed;
-   z-index: 1000;
-   left: 0;
-   top: 0;
-   width: 100%;
-   height: 100%;
-   overflow: auto;
-   background-color: rgba(0, 0, 0, 0.4);
- ">
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.4);
+      ">
     <div style="
-     background-color: #fefefe;
-     margin: 15% auto;
-     padding: 20px;
-     border: 1px solid #888;
-     width: 80px;
-     height: 80px;
-     border-radius: 50%;
-     animation: pulse 2s infinite;
-   "></div>
+          background-color: #fefefe;
+          margin: 15% auto;
+          padding: 20px;
+          border: 1px solid #888;
+          width: 80px;
+          height: 80px;
+          border-radius: 50%;
+          animation: pulse 2s infinite;
+        "></div>
   </div>
 
   <div class="header">
@@ -382,10 +397,13 @@
   </div>
 
   <div class="search-bar">
-    <label class="switch">
-      <input type="checkbox" id="toggleGooglePhotos" />
-      <span class="slider round"></span>
-    </label>
+    <div class="switch-container">
+      <label class="switch-label" for="toggleGooglePhotos">See Google Photos</label>
+      <label class="switch">
+        <input type="checkbox" id="toggleGooglePhotos" />
+        <span class="slider round"></span>
+      </label>
+    </div>
     <form class="search-bar" action="/" method="GET">
       <input type="text" name="search" id="search" placeholder="Search Image" />
       <button id="submit" type="submit">Search</button>
