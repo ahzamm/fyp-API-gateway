@@ -265,9 +265,6 @@
       background-color: #ddd;
     }
 
-    .dropdown:hover .dropdown-content {
-      display: block;
-    }
 
     .switch {
       position: relative;
@@ -554,6 +551,22 @@
       span.onclick = function () {
         modal.style.display = "none";
       };
+
+      // Dropdown functionality
+      const dropbtn = document.querySelector('.dropbtn');
+      const dropdownContent = document.querySelector('.dropdown-content');
+
+      dropbtn.addEventListener('click', function (event) {
+        event.stopPropagation();
+        dropdownContent.style.display = dropdownContent.style.display === 'block' ? 'none' : 'block';
+      });
+
+      // Close the dropdown if the user clicks outside of it
+      window.addEventListener('click', function () {
+        if (dropdownContent.style.display === 'block') {
+          dropdownContent.style.display = 'none';
+        }
+      });
     });
 
     const dropZone = document.querySelector("#drop-zone");
@@ -625,6 +638,7 @@
         });
       });
     });
+
 
   </script>
 </body>

@@ -19,8 +19,8 @@ app = Flask(__name__)
 
 
 google_client_id = os.getenv("CLIENT_ID")
-app.secret_key = os.getenv("CLIENT_SECRET")
-project_id = os.getenv("PROJECT_ID")
+app.secret_key   = os.getenv("CLIENT_SECRET")
+project_id       = os.getenv("PROJECT_ID")
 
 
 def generate_random_string(length):
@@ -30,7 +30,7 @@ def generate_random_string(length):
 
 def get_avatar_link(name):
     first_letter = name[0].upper()
-    hash_value = hashlib.md5(first_letter.encode("utf-8")).hexdigest()
+    hash_value   = hashlib.md5(first_letter.encode("utf-8")).hexdigest()
     return f"https://www.gravatar.com/avatar/{hash_value}?d=identicon"
 
 
@@ -72,14 +72,14 @@ def callback():
     flow = Flow.from_client_config(
         client_config={
             "web": {
-                "client_id": google_client_id,
-                "project_id": project_id,
-                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-                "token_uri": "https://oauth2.googleapis.com/token",
+                "client_id"                  : google_client_id,
+                "project_id"                 : project_id,
+                "auth_uri"                   : "https://accounts.google.com/o/oauth2/auth",
+                "token_uri"                  : "https://oauth2.googleapis.com/token",
                 "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-                "client_secret": app.secret_key,
-                "redirect_uris": ["http://localhost:5000/callback"],
-                "javascript_origins": ["http://localhost:5000"],
+                "client_secret"              : app.secret_key,
+                "redirect_uris"              : ["http://localhost:5000/callback"],
+                "javascript_origins"         : ["http://localhost:5000"],
             }
         },
         scopes=[
@@ -100,16 +100,16 @@ def callback():
     session["credentials"] = credentials_to_dict(credentials)
 
     id_info = id_token.verify_oauth2_token(
-        id_token=credentials.id_token,
-        request=google.auth.transport.requests.Request(),
-        audience=google_client_id,
+        id_token = credentials.id_token,
+        request  = google.auth.transport.requests.Request(),
+        audience = google_client_id,
     )
     email = id_info.get("email")
     name = id_info.get("name")
     picture = id_info.get("picture")
 
-    url = f"http://localhost:8001/api/user/check-email/?email={email}"
-    response = requests.get(url)
+    url           = f"http://localhost:8001/api/user/check-email/?email={email}"
+    response      = requests.get(url)
     response_data = response.json()
     if response_data.get("success") == False:
         # Create user
@@ -159,23 +159,25 @@ def callback():
             return render_template("signup.html", message=message)
 
 
-@app.route("/signup", methods=["GET", "POST"])
+@app.route("/signup", methods=["GET"])
+def show_signup_form():
+    token = request.cookies.get("token")
+    if token:
+        url = "http://localhost:8001/api/user/profile"
+        headers = {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "Authorization": "Bearer " + token,
+        }
+        response = requests.get(url, headers=headers)
+        response_data = response.json()
+        if response_data.get("success") == True:
+            return redirect("/")
+    return render_template("signup.html")
+
+
+@app.route("/signup", methods=["POST"])
 def signup():
-    if request.method == "GET":
-        token = request.cookies.get("token")
-        if token:
-            url = "http://localhost:8001/api/user/profile"
-            headers = {
-                "Content-Type": "application/json",
-                "Accept": "application/json",
-                "Authorization": "Bearer " + token,
-            }
-            response = requests.get(url, headers=headers)
-            response_data = response.json()
-            if response_data.get("success") == True:
-                return redirect("/")
-        return render_template("signup.html")
-    if request.method == "POST":
         name = request.form["name"]
         email = request.form["email"]
         password = request.form["password"]
@@ -205,43 +207,50 @@ def signup():
             return render_template("signup.html", message=message)
 
 
-@app.route("/signin", methods=["GET", "POST"])
-def signin():
-    if request.method == "GET":
-        token = request.cookies.get("token")
-        if token:
-            url = "http://localhost:8001/api/user/profile"
-            headers = {
-                "Content-Type": "application/json",
-                "Accept": "application/json",
-                "Authorization": "Bearer " + token,
-            }
-            response = requests.get(url, headers=headers)
-            response_data = response.json()
-            if response_data.get("success") == True:
-                return redirect("/")
-        return render_template("signin.html")
-    if request.method == "POST":
-        email = request.form["email"]
-        password = request.form["password"]
 
-        data = {
-            "email": email,
-            "password": password,
+@app.route("/signin", methods=["GET"])
+def show_signin_form():
+    session.pop('message', None)
+    
+    token = request.cookies.get("token")
+    if token:
+        url     = "http://localhost:8001/api/user/profile"
+        headers = {
+            "Content-Type" : "application/json",
+            "Accept"       : "application/json",
+            "Authorization": "Bearer " + token,
         }
-
-        url = "http://localhost:8001/api/user/login"
-        headers = {"Content-Type": "application/json", "Accept": "application/json"}
-        response = requests.post(url, json=data, headers=headers)
+        response      = requests.get(url, headers=headers)
         response_data = response.json()
-
         if response_data.get("success") == True:
-            resp = make_response(redirect("/"))
-            resp.set_cookie("token", response_data.get("token", ""))
-            return resp
-        else:
-            message = response_data.get("message")
-            return render_template("signin.html", message=message)
+            return redirect("/")
+    
+    return render_template("signin.html")
+
+
+
+@app.route("/signin", methods=["POST"])
+def signin():
+    email    = request.form["email"]
+    password = request.form["password"]
+
+    data = {
+        "email"   : email,
+        "password": password,
+    }
+
+    url           = "http://localhost:8001/api/user/login"
+    headers       = {"Content-Type": "application/json", "Accept": "application/json"}
+    response      = requests.post(url, json=data, headers=headers)
+    response_data = response.json()
+
+    if response_data.get("success") == True:
+        resp = make_response(redirect("/"))
+        resp.set_cookie("token", response_data.get("token", ""))
+        return resp
+    else:
+        message = response_data.get("message")
+        return render_template("signin.html", message=message)
 
 
 @app.route("/logout", methods=["GET"])
