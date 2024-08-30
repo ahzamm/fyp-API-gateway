@@ -39,14 +39,14 @@ def login_with_google():
     flow = Flow.from_client_config(
         client_config={
             "web": {
-                "client_id": google_client_id,
-                "project_id": project_id,
-                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-                "token_uri": "https://oauth2.googleapis.com/token",
+                "client_id"                  : google_client_id,
+                "project_id"                 : project_id,
+                "auth_uri"                   : "https://accounts.google.com/o/oauth2/auth",
+                "token_uri"                  : "https://oauth2.googleapis.com/token",
                 "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-                "client_secret": app.secret_key,
-                "redirect_uris": ["http://localhost:5000/callback"],
-                "javascript_origins": ["http://localhost:5000"],
+                "client_secret"              : app.secret_key,
+                "redirect_uris"              : ["http://localhost:5000/callback"],
+                "javascript_origins"         : ["http://localhost:5000"],
             }
         },
         scopes=[
@@ -56,7 +56,7 @@ def login_with_google():
             "https://www.googleapis.com/auth/photoslibrary",
             "https://www.googleapis.com/auth/photoslibrary.readonly",
         ],
-        redirect_uri="http://localhost:5000/callback",
+        redirect_uri = "http://localhost:5000/callback",
     )
     authorization_url, state = flow.authorization_url(
         access_type="offline", include_granted_scopes="true"
@@ -115,16 +115,16 @@ def callback():
         # Create user
         random_string = generate_random_string(10)
         data = {
-            "name": name,
-            "email": email,
-            "password": random_string,
+            "name"                 : name,
+            "email"                : email,
+            "password"             : random_string,
             "password_confirmation": random_string,
-            "avatar": picture,
+            "avatar"               : picture,
         }
 
-        url = "http://localhost:8001/api/user/register"
-        headers = {"Content-Type": "application/json", "Accept": "application/json"}
-        response = requests.post(url, json=data, headers=headers)
+        url           = "http://localhost:8001/api/user/register"
+        headers       = {"Content-Type": "application/json", "Accept": "application/json"}
+        response      = requests.post(url, json=data, headers=headers)
         response_data = response.json()
 
         if response_data.get("success") == True:
@@ -139,14 +139,14 @@ def callback():
 
     elif response_data.get("success") == True:
         data = {
-            "name": name,
-            "email": email,
+            "name"  : name,
+            "email" : email,
             "avatar": picture,
         }
 
-        url = "http://localhost:8001/api/user/edit-user"
-        headers = {"Content-Type": "application/json", "Accept": "application/json"}
-        response = requests.post(url, json=data, headers=headers)
+        url           = "http://localhost:8001/api/user/edit-user"
+        headers       = {"Content-Type": "application/json", "Accept": "application/json"}
+        response      = requests.post(url, json=data, headers=headers)
         response_data = response.json()
         if response_data.get("success") == True:
             resp = make_response(redirect("/"))
@@ -163,13 +163,13 @@ def callback():
 def show_signup_form():
     token = request.cookies.get("token")
     if token:
-        url = "http://localhost:8001/api/user/profile"
+        url     = "http://localhost:8001/api/user/profile"
         headers = {
-            "Content-Type": "application/json",
-            "Accept": "application/json",
+            "Content-Type" : "application/json",
+            "Accept"       : "application/json",
             "Authorization": "Bearer " + token,
         }
-        response = requests.get(url, headers=headers)
+        response      = requests.get(url, headers=headers)
         response_data = response.json()
         if response_data.get("success") == True:
             return redirect("/")
@@ -178,22 +178,22 @@ def show_signup_form():
 
 @app.route("/signup", methods=["POST"])
 def signup():
-        name = request.form["name"]
-        email = request.form["email"]
-        password = request.form["password"]
+        name             = request.form["name"]
+        email            = request.form["email"]
+        password         = request.form["password"]
         confirm_password = request.form["confirm_password"]
 
         data = {
-            "name": name,
-            "email": email,
-            "password": password,
+            "name"                 : name,
+            "email"                : email,
+            "password"             : password,
             "password_confirmation": confirm_password,
-            "avatar": get_avatar_link(name),
+            "avatar"               : get_avatar_link(name),
         }
 
-        url = "http://localhost:8001/api/user/register"
-        headers = {"Content-Type": "application/json", "Accept": "application/json"}
-        response = requests.post(url, json=data, headers=headers)
+        url           = "http://localhost:8001/api/user/register"
+        headers       = {"Content-Type": "application/json", "Accept": "application/json"}
+        response      = requests.post(url, json=data, headers=headers)
         response_data = response.json()
 
         if response_data.get("success") == True:
@@ -261,12 +261,12 @@ def logout():
 
 
 def refresh_google_token(refresh_token):
-    url = "https://oauth2.googleapis.com/token"
+    url  = "https://oauth2.googleapis.com/token"
     data = {
-        "client_id": google_client_id,
+        "client_id"    : google_client_id,
         "client_secret": app.secret_key,
         "refresh_token": refresh_token,
-        "grant_type": "refresh_token",
+        "grant_type"   : "refresh_token",
     }
     response = requests.post(url, data=data)
     if response.status_code == 200:
@@ -278,8 +278,8 @@ def refresh_google_token(refresh_token):
 
 def sync_local_photos(user_id, google_photos_ids):
     # Fetch locally stored photos
-    url = f"http://localhost:5001/retrieve-all-photos/?user_id={user_id}"
-    response = requests.get(url)
+    url          = f"http://localhost:5001/retrieve-all-photos/?user_id={user_id}"
+    response     = requests.get(url)
     local_photos = response.json()
 
     # Extract local photo ids
@@ -305,20 +305,20 @@ def home():
     if token is None:
         return redirect("/signin")
 
-    url = "http://localhost:8001/api/user/profile"
+    url     = "http://localhost:8001/api/user/profile"
     headers = {
-        "Content-Type": "application/json",
-        "Accept": "application/json",
+        "Content-Type" : "application/json",
+        "Accept"       : "application/json",
         "Authorization": "Bearer " + token,
     }
-    response = requests.get(url, headers=headers)
+    response      = requests.get(url, headers=headers)
     response_data = response.json()
     if response_data.get("success") == True:
-        user_id = response_data.get("user").get("id")
-        user_name = response_data.get("user").get("name")
-        user_email = response_data.get("user").get("email")
+        user_id     = response_data.get("user").get("id")
+        user_name   = response_data.get("user").get("name")
+        user_email  = response_data.get("user").get("email")
         user_avatar = response_data.get("user").get("avatar")
-        user_data = {"name": user_name, "email": user_email, "avatar": user_avatar}
+        user_data   = {"name": user_name, "email": user_email, "avatar": user_avatar}
     else:
         return redirect("/signin")
 
@@ -326,18 +326,18 @@ def home():
         query = request.args.get("search")
         if query:
             images_data_urls = []
-            url = "http://127.0.0.1:5001/query"
-            headers = {
+            url              = "http://127.0.0.1:5001/query"
+            headers          = {
                 "Content-Type": "application/json",
-                "Accept": "application/json",
+                "Accept"      : "application/json",
             }
-            data = {"query": query, "user_id": user_id}
-            response = requests.post(url, data=json.dumps(data), headers=headers)
+            data      = {"query": query, "user_id": user_id}
+            response  = requests.post(url, data=json.dumps(data), headers=headers)
             image_ids = response.json().get("image_ids")
 
             if image_ids:
-                url = f"http://127.0.0.1:5002/retrieve-photos/?vector_ids={image_ids}"
-                response = requests.get(url)
+                url           = f"http://127.0.0.1:5002/retrieve-photos/?vector_ids={image_ids}"
+                response      = requests.get(url)
                 images_base64 = response.json()
                 for image_dict in images_base64:
                     image_data_url = "data:image/jpeg;base64," + image_dict["image"]
@@ -352,15 +352,15 @@ def home():
             )
 
             response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
-            response.headers["Pragma"] = "no-cache"
-            response.headers["Expires"] = "0"
+            response.headers["Pragma"]        = "no-cache"
+            response.headers["Expires"]       = "0"
 
             return response
 
         # Retrieve other images
-        url = f"http://localhost:5002/retrieve-all-photos/?user_id={user_id}"
-        response = requests.get(url)
-        images_base64 = response.json()
+        url              = f"http://localhost:5002/retrieve-all-photos/?user_id={user_id}"
+        response         = requests.get(url)
+        images_base64    = response.json()
         images_data_urls = []
         for image_dict in images_base64:
             image_data_url = "data:image/jpeg;base64," + image_dict["image"]
@@ -377,14 +377,14 @@ def home():
             else:
                 return redirect("/login-with-google")
 
-        access_token = credentials.token
+        access_token      = credentials.token
         google_photos_ids = []
         if access_token:
             headers = {
                 "Authorization": f"Bearer {access_token}",
-                "Accept": "application/json",
+                "Accept"       : "application/json",
             }
-            url = "https://photoslibrary.googleapis.com/v1/mediaItems"
+            url             = "https://photoslibrary.googleapis.com/v1/mediaItems"
             next_page_token = None
             while True:
                 if next_page_token:
@@ -406,8 +406,8 @@ def home():
                     # Check if vector_id exists in both microservices
                     vector_exists = False
                     for port in [5001, 5002]:
-                        check_url = f"http://127.0.0.1:{port}/check-vector"
-                        data = {"vector_id": vector_id}
+                        check_url      = f"http://127.0.0.1:{port}/check-vector"
+                        data           = {"vector_id": vector_id}
                         check_response = requests.get(check_url, data)
                         if check_response.json().get(
                             "success"
@@ -418,13 +418,13 @@ def home():
                     if not vector_exists:
                         for port in [5001, 5002]:
                             create_url = f"http://127.0.0.1:{port}/photos"
-                            data = {
+                            data       = {
                                 "vector_id": vector_id,
-                                "filename": item.get("filename", "unknown.jpg"),
-                                "user_id": user_id,
+                                "filename" : item.get("filename", "unknown.jpg"),
+                                "user_id"  : user_id,
                             }
                             image_data = requests.post(image_url).content
-                            files = {
+                            files      = {
                                 "image": (data["filename"], image_data, "image/jpeg")
                             }
                             requests.post(create_url, data=data, files=files)
@@ -442,8 +442,8 @@ def home():
             )
         )
         response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
-        response.headers["Pragma"] = "no-cache"
-        response.headers["Expires"] = "0"
+        response.headers["Pragma"]        = "no-cache"
+        response.headers["Expires"]       = "0"
 
         return response
 
@@ -452,21 +452,21 @@ def home():
             file = request.files["image"]
             if file:
                 filename = secure_filename(file.filename)
-                files = {"image": (filename, file)}
-                url = "http://127.0.0.1:5001/photos"
-                data = {
+                files    = {"image": (filename, file)}
+                url      = "http://127.0.0.1:5001/photos"
+                data     = {
                     "user_id": user_id,
                 }
-                response = requests.post(url, data=data, files=files)
+                response  = requests.post(url, data=data, files=files)
                 vector_id = response.json().get("vector_id")
 
                 file.seek(0)
                 files = {"image": (filename, file)}
-                url = "http://127.0.0.1:5002/photos"
-                data = {
+                url   = "http://127.0.0.1:5002/photos"
+                data  = {
                     "vector_id": vector_id,
-                    "filename": filename,
-                    "user_id": user_id,
+                    "filename" : filename,
+                    "user_id"  : user_id,
                 }
                 response = requests.post(url, data=data, files=files)
                 return redirect("/")
@@ -474,12 +474,12 @@ def home():
 
 def credentials_to_dict(credentials):
     return {
-        "token": credentials.token,
+        "token"        : credentials.token,
         "refresh_token": credentials.refresh_token,
-        "token_uri": credentials.token_uri,
-        "client_id": credentials.client_id,
+        "token_uri"    : credentials.token_uri,
+        "client_id"    : credentials.client_id,
         "client_secret": credentials.client_secret,
-        "scopes": credentials.scopes,
+        "scopes"       : credentials.scopes,
     }
 
 
@@ -502,9 +502,8 @@ def get_photos():
     if not access_token:
         return redirect("/signin")
 
-    headers = {"Authorization": f"Bearer " + access_token, "Accept": "application/json"}
-
-    url = "https://photoslibrary.googleapis.com/v1/mediaItems"
+    headers  = {"Authorization": f"Bearer " + access_token, "Accept": "application/json"}
+    url      = "https://photoslibrary.googleapis.com/v1/mediaItems"
     response = requests.get(url, headers=headers)
     if response.status_code == 200:
         photos_data = response.json()
