@@ -281,6 +281,7 @@ def sync_local_photos(user_id, google_photos_ids):
     url          = f"http://localhost:5001/retrieve-all-photos/?user_id={user_id}"
     response     = requests.get(url)
     local_photos = response.json()
+    print('🚀🚀🚀', local_photos)
 
     # Extract local photo ids
     local_photo_ids = [photo["vector_id"] for photo in local_photos["photos"]]
@@ -510,6 +511,46 @@ def get_photos():
         return render_template("photos.html", photos=photos_data.get("mediaItems", []))
     else:
         return f"An error occurred: {response.status_code} {response.text}"
+
+
+@app.route("/delete-account", methods=["POST"])
+def delete_account():
+    token = request.cookies.get("token")
+    if token is None:
+        return redirect("/signin")
+    
+    # Get the user profile to fetch the user ID
+    url     = "http://localhost:8001/api/user/profile"
+    headers = {
+        "Content-Type" : "application/json",
+        "Accept"       : "application/json",
+        "Authorization": "Bearer " + token,
+    }
+    response = requests.get(url, headers=headers)
+    response_data = response.json()
+
+    if response_data.get("success") == True:
+        user_id = response_data.get("user").get("id")
+        
+        # Delete the user's vectors from the vector embedding service
+        delete_vectors_url = f"http://localhost:5001/delete-user-data?user_id={user_id}"
+        vector_delete_response = requests.delete(delete_vectors_url)
+        print(f"Vector delete response: {vector_delete_response.json()}")
+
+        # Delete the user's images from the image storage service
+        delete_images_url = f"http://localhost:5002/delete-user-data?user_id={user_id}"
+        image_delete_response = requests.delete(delete_images_url)
+        print(f"Image delete response: {image_delete_response.json()}")
+
+        # Now proceed to delete the user account
+        url     = "http://localhost:8001/api/user/delete-account"
+        response = requests.delete(url, headers=headers)
+        response_data = response.json()
+
+        if response_data.get("success") == True:
+             return redirect("/signin")
+    
+    return render_template("error.html", message="Failed to delete the account")
 
 
 if __name__ == "__main__":
